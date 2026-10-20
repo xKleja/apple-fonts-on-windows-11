@@ -138,7 +138,8 @@ jobs:
       - name: shellcheck
         run: shellcheck --severity=warning build/*.sh
       - name: Scripts are executable
-        run: git ls-files -s 'build/*.sh' | awk '$1 != "100755" { print "not executable: " $4; bad = 1 } END { exit bad }'
+        run: |
+          git ls-files -s 'build/*.sh' | awk '$1 != "100755" { print "not executable: " $4; bad = 1 } END { exit bad }'
 
   hygiene:
     name: Repo hygiene
