@@ -11,6 +11,9 @@ From a review of the project as a Windows team lead. The fonts are unchanged.
 
 ### Fixed
 
+- **`Install.cmd` started from a PowerShell 7 window failed** ("Get-FileHash is not recognized"):
+  Windows PowerShell inherited PowerShell 7's module path. The launchers clear it and the scripts reset
+  it to Windows PowerShell's own folders.
 - **Status.cmd said "Not installed" and uninstalling from Settings failed for anyone not running as
   administrator**: the backup folder was readable by administrators only. Everyone can now read it; only
   administrators can change it.
@@ -34,6 +37,10 @@ From a review of the project as a Windows team lead. The fonts are unchanged.
 
 ### Changed
 
+- **Install and uninstall windows show numbered steps** (`[1/7]`...`[7/7]`, `[1/3]`...`[3/3]`) with a
+  progress bar for every long step: fonts checked, download size / speed / time left, fonts installed or
+  removed; a seconds counter while the restore point is created and the font cache stops; green ticks;
+  and a summary with the time taken, how to check and how to undo.
 - Installing again over a finished install says "Already installed"; over an unfinished one,
   `Install.cmd` offers to finish it. Uninstalling with nothing installed says "Nothing to uninstall".
 - `status.ps1` shows the project version, the Windows build and the backup folder, flags a per-user copy

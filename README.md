@@ -80,6 +80,11 @@ uninstalling does not need it, because it also works from Settings.
 If an install is interrupted (window closed, power cut), double-click `Install.cmd` again: it offers to
 finish what was started.
 
+The window shows seven numbered steps, `[1/7]` to `[7/7]`, with a progress bar for every long step
+(fonts checked, megabytes downloaded with speed and time left, fonts installed), a seconds counter
+while Windows creates the restore point, and a summary at the end. Steps 1-3 run in the first window;
+after **Yes** on the administrator prompt, steps 4-7 continue in a second window.
+
 What happens, in order:
 
 1. **Checks first.** It confirms this is Windows 11 and that the folder is usable: extracted from the
@@ -253,6 +258,7 @@ uninstall.ps1            one-step undo
 status.ps1               read-only health check
 scripts/
   checks.ps1                Windows 11 and folder-location checks
+  ui.ps1                    what the windows show: numbered steps, progress bars, timers
   install-macos-fonts.ps1   the actual installer (state-tracked, resumable)
   restore-macos-fonts.ps1   the actual restore
   backup-location.ps1       where state, logs and backups live

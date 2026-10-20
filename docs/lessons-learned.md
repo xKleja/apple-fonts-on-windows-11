@@ -55,6 +55,14 @@ Each of these cost real debugging time. They are why the code looks the way it d
   installed, the sandbox sees the files in `C:\Windows\Fonts` without registry entries, which is
   exactly the "file present but not registered" case the installer must handle (it registers them,
   records `KeepFile`, and uninstall removes only the registry entry).
+- **Windows PowerShell started from a PowerShell 7 window inherits its `PSModulePath`** and then
+  cannot load its own modules: `Get-FileHash`, `Expand-Archive`, `Get-Acl` become "not recognized".
+  Users whose Windows Terminal opens PowerShell 7 hit this when they run `Install.cmd` there. The
+  launchers clear the variable and the entry scripts rebuild it from Windows PowerShell's own folders.
+- A progress bar is easy to get wrong in 5.1: `Write-Progress` on every item slows loops down (update
+  every few items), and `Expand-Archive` / `Invoke-WebRequest` draw their own bars (silence them where
+  ours is shown). `Wait-Job -Timeout 1` in a loop gives a live seconds counter for steps Windows reports
+  no progress for.
 - **Test as a standard user, not only as administrator.** Everything in the Sandbox test once ran
   elevated, so it missed that an administrators-only backup folder made `Status.cmd` report "Not
   installed" and broke the Settings uninstall (Settings starts it unelevated). The test now also runs
