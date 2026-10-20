@@ -112,6 +112,7 @@ if (Test-Path -LiteralPath $StatePath) {
     try { $old = Get-Content -LiteralPath $StatePath -Raw | ConvertFrom-Json }
     catch { throw "state.json is unreadable ($($_.Exception.Message)). Restore with the HKLM-Fonts-*.reg export in $BackupDir." }
     Assert-SafeState $old
+    if ($old.Complete) { throw "Nothing to resume: the install recorded in $StatePath is complete. Run status.ps1 to check it." }
     # Options chosen at the original install carry over unless given again now.
     if (-not $PSBoundParameters.ContainsKey('SkipUI'))    { $SkipUI    = [switch][bool]$old.Options.SkipUI }
     if (-not $PSBoundParameters.ContainsKey('SkipEmoji')) { $SkipEmoji = [switch][bool]$old.Options.SkipEmoji }
@@ -119,7 +120,9 @@ if (Test-Path -LiteralPath $StatePath) {
     $state = [ordered]@{
         Installed = $installed; Complete = $false
         Options   = [ordered]@{ SkipUI = [bool]$SkipUI; SkipEmoji = [bool]$SkipEmoji }
-        SFFonts   = Get-Items $old.SFFonts; UI = Get-Items $old.UI; HKCU = Get-Items $old.HKCU; EmojiReg = $old.EmojiReg
+        # @(): a function's output is unrolled, so 0 or 1 items would not stay a list (5.1 then
+        # saves an empty list as {} and += on a single item fails)
+        SFFonts   = @(Get-Items $old.SFFonts); UI = @(Get-Items $old.UI); HKCU = @(Get-Items $old.HKCU); EmojiReg = $old.EmojiReg
     }
     "Resuming: $($state.SFFonts.Count) SF fonts, $($state.UI.Count) UI fonts, emoji=$([bool]$state.EmojiReg) already recorded"
 } else {

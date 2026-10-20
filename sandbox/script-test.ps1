@@ -36,7 +36,8 @@ function Assert-Installed([string]$label) {
     Check ($s.Complete -eq $true) 'state.Complete'
     Check (@($s.UI).Count -eq 13) "state.UI has 13 entries ($(@($s.UI).Count))"
     Check ([bool]$s.EmojiReg) 'state.EmojiReg recorded'
-    Check ((Get-Acl $Backup).Access | Where-Object { $_.IdentityReference -match 'Users$' } | Measure-Object).Count -eq 0 'backup folder not writable by Users'
+    $users = @((Get-Acl $Backup).Access | Where-Object { $_.IdentityReference -match 'Users$' })
+    Check ($users.Count -eq 0) "backup folder has no Users access ($(($users.IdentityReference) -join ', '))"
     foreach ($u in $s.UI) { Check ($u.Original -notlike 'SFUI-*') "UI original recorded for $($u.Registry)" }
 }
 
@@ -63,20 +64,24 @@ try {
     Assert-Restored 'after restore'
     Get-ChildItem "$Backup\state.restored-*.json" | Remove-Item -Force
 
-    Log '=== 4. simulated crash mid-install, then -Resume'
-    # Crash right after the 5th UI entry is recorded: state says it is ours, registry not yet changed.
-    $env:APPLEFONTS_TEST_CRASH_AFTER_UI = '5'
-    Check (-not (Run 'install-macos-fonts.ps1' $installArgs)) 'install interrupted by the simulated crash'
-    Remove-Item Env:\APPLEFONTS_TEST_CRASH_AFTER_UI
-    $s = State
-    Check ($s.Complete -eq $false) 'state marks the install incomplete'
-    Check (@($s.UI).Count -eq 5) "5 UI entries recorded before the crash ($(@($s.UI).Count))"
-    Check (Run 'install-macos-fonts.ps1' ($installArgs + @{ Resume = $true })) '-Resume finished the install'
-    Assert-Installed 'after resume'
+    # Crash right after the Nth UI entry is recorded: state says it is ours, registry not yet changed.
+    # 1 = a one-item list in state.json (Windows PowerShell 5.1 does not keep it a list by itself).
+    foreach ($n in 1, 5) {
+        Log "=== 4. simulated crash after UI entry $n, then -Resume"
+        $env:APPLEFONTS_TEST_CRASH_AFTER_UI = "$n"
+        Check (-not (Run 'install-macos-fonts.ps1' $installArgs)) 'install interrupted by the simulated crash'
+        Remove-Item Env:\APPLEFONTS_TEST_CRASH_AFTER_UI
+        $s = State
+        Check ($s.Complete -eq $false) 'state marks the install incomplete'
+        Check (@($s.UI).Count -eq $n) "$n UI entries recorded before the crash ($(@($s.UI).Count))"
+        Check (Run 'install-macos-fonts.ps1' ($installArgs + @{ Resume = $true })) '-Resume finished the install'
+        Assert-Installed "after resume (crash at $n)"
 
-    Log '=== 5. restore again'
-    Check (Run 'restore-macos-fonts.ps1' @{ BackupDir = $Backup }) 'restore succeeded'
-    Assert-Restored 'after second restore'
+        Log "=== 5. restore after the resumed install (crash at $n)"
+        Check (Run 'restore-macos-fonts.ps1' @{ BackupDir = $Backup }) 'restore succeeded'
+        Assert-Restored "after restore (crash at $n)"
+        Get-ChildItem "$Backup\state.restored-*.json" | Remove-Item -Force
+    }
 } catch {
     $script:fails++
     Log "UNEXPECTED: $($_.Exception.Message) at $($_.InvocationInfo.PositionMessage)"

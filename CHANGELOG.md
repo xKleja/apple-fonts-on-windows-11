@@ -24,7 +24,8 @@ The fonts are unchanged (same release assets as v1.0.0); these changes affect th
 - Installer records every change in `state.json` **before** making it, finds all conflicts in a pre-flight
   before the first change, writes `state.json` atomically, verifies every copied file, refuses to run
   while a previous uninstall still waits for a restart, and time-limits the restore point and registry exports.
-- `-Resume` remembers `-SkipUI` / `-SkipEmoji` and finishes partly recorded steps.
+- `-Resume` remembers `-SkipUI` / `-SkipEmoji`, finishes partly recorded steps, and refuses to run on a
+  complete install.
 - A byte-identical SF font that is already installed is left alone (only a missing registry entry is added and later removed).
 - Backup folder is restricted to administrators; restore validates `state.json` before acting, continues past
   individual failures and reports them.

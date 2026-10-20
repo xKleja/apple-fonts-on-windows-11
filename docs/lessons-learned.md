@@ -41,6 +41,10 @@ Each of these cost real debugging time. They are why the code looks the way it d
   recorded steps. A pre-flight finds all conflicts before the first change.
 - **`$null` is not null for .NET string arguments.** `[IO.File]::Replace($a, $b, $null)` and
   `MoveFileEx($p, $null, ...)` receive `""` and fail. Pass `[NullString]::Value`.
+- **A function's output is unrolled.** `$x = Get-Items $list` gives `$null` for 0 items and a single
+  object for 1, not a list. Windows PowerShell 5.1 then writes the empty list to JSON as `{}` (restore
+  rejected the state) and `+=` on the single object fails. Wrap it: `@(Get-Items $list)`. PowerShell 7
+  hides the first half of this, so test on 5.1 too. The Sandbox script test caught it.
 - Write `state.json` to a temp file and swap it in (`[IO.File]::Replace`): a power cut mid-write must not
   corrupt the only record of what to undo. The backup folder is admin-only, because the elevated
   restore trusts its contents (and validates them anyway: `Assert-SafeState`).

@@ -44,7 +44,7 @@ foreach ($u in Get-Items $state.UI) {
         Remove-FontFile (Join-Path $Fonts $u.New)
     }
 }
-$hkcu = Get-Items $state.HKCU
+$hkcu = @(Get-Items $state.HKCU)
 if ($hkcu) {
     if (-not (Test-Path $RegCU)) { New-Item $RegCU -Force | Out-Null }
     foreach ($c in $hkcu) {

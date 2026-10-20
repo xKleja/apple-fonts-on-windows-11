@@ -143,6 +143,7 @@ after updates. If anything shows `[DIFF]`:
 | `Download of ... failed` | Check the internet connection (and any proxy), then run `install.ps1` again. Or use the offline install above. |
 | `Checksum mismatch` / `Missing font` | A font file changed or a download got corrupted. Delete `fonts\SF`, `fonts\emoji` and the `*.ttf` in `fonts\ui`, then run `install.ps1` again. |
 | `Already installed (found ...state.json)` | It is installed. Use `uninstall.ps1` first, or `install.ps1 -Resume` if the last run was interrupted. |
+| `Nothing to resume: the install ... is complete` | The last install finished; there is nothing for `-Resume` to do. Check it with `status.ps1`. |
 | `C:\Windows\Fonts already has a different SF-Pro.ttf` (or another SF font), or `The font name ... is already registered` | Another copy of that SF font is installed. Uninstall it (Settings > Personalization > Fonts), then run `install.ps1` again. Nothing was changed. |
 | `A previous uninstall is still waiting ...` | Restart Windows first, then install. |
 | Install stopped half-way | `.\install.ps1 -Resume` finishes it, or `.\uninstall.ps1` undoes whatever was done. Every change is recorded before it is made. |
