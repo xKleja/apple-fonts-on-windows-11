@@ -6,10 +6,11 @@ Segoe UI Variable           <- SF Pro variable (wght + opsz), mapped onto Segoe'
 Each output keeps Segoe's exact name table, weight/style bits and vertical metrics, so
 Windows matches every requested face (no faux bold) and layouts keep their line heights.
 
-Usage: build_ui_fonts.py <apple fonts dir> <segoe dir> <out dir> [--no-hint]
+Usage: build_ui_fonts.py [--no-hint] <apple fonts dir> <segoe dir> <out dir> [file ...]
+  file: build only these outputs (e.g. segoeui.ttf SegUIVar.ttf); default: all 13
 """
+import argparse
 import os
-import sys
 import tempfile
 
 from fontTools import subset
@@ -17,16 +18,30 @@ from fontTools.merge import Merger
 from fontTools.ttLib import TTFont
 from fontTools.varLib import instancer
 
-APPLE, SEGOE, OUT = sys.argv[1:4]
-HINT = "--no-hint" not in sys.argv
-os.makedirs(OUT, exist_ok=True)
-
-SF_PRO = f"{APPLE}/SF Pro/SF-Pro.ttf"
-SF_PRO_IT = f"{APPLE}/SF Pro/SF-Pro-Italic.ttf"
-EXT = f"{APPLE}/SF Multilingual Extensions"
-SCRIPTS = [f"{EXT}/SF Arabic/SF-Arabic.ttf", f"{EXT}/SF Hebrew/SF-Hebrew.ttf",
-           f"{EXT}/SF Armenian/SF-Armenian.ttf", f"{EXT}/SF Georgian/SF-Georgian.ttf"]
 TEXT_OPSZ = 17  # SF Pro "Text" optical size: what macOS uses for UI-sized text
+
+# Set by configure() from the command line.
+SEGOE = OUT = SF_PRO = SF_PRO_IT = SF_VERSION = None
+SCRIPTS = []
+HINT = True
+
+
+def configure(apple, segoe, out, hint):
+    global SEGOE, OUT, SF_PRO, SF_PRO_IT, SF_VERSION, SCRIPTS, HINT
+    SEGOE, OUT, HINT = segoe, out, hint
+    SF_PRO = f"{apple}/SF Pro/SF-Pro.ttf"
+    SF_PRO_IT = f"{apple}/SF Pro/SF-Pro-Italic.ttf"
+    ext = f"{apple}/SF Multilingual Extensions"
+    SCRIPTS = [f"{ext}/SF Arabic/SF-Arabic.ttf", f"{ext}/SF Hebrew/SF-Hebrew.ttf",
+               f"{ext}/SF Armenian/SF-Armenian.ttf", f"{ext}/SF Georgian/SF-Georgian.ttf"]
+    missing = [p for p in [SF_PRO, SF_PRO_IT, *SCRIPTS] if not os.path.isfile(p)]
+    missing += [f"{segoe}/{f}" for f in ALL_OUTPUTS if not os.path.isfile(f"{segoe}/{f}")]
+    if missing:
+        raise SystemExit("Missing input files:\n  " + "\n  ".join(missing))
+    # Version label for name ID 5, read from the font (Apple's head.fontRevision is meaningless).
+    with TTFont(SF_PRO, lazy=True) as f:
+        SF_VERSION = f["name"].getDebugName(5).replace("Version ", "").strip()
+    os.makedirs(OUT, exist_ok=True)
 
 # Segoe UI file -> (weight, italic)
 STATIC = {
@@ -35,6 +50,8 @@ STATIC = {
     "seguili.ttf": (300, True), "seguisli.ttf": (350, True), "segoeuii.ttf": (400, True),
     "seguisbi.ttf": (600, True), "segoeuiz.ttf": (700, True), "seguibli.ttf": (900, True),
 }
+VARIABLE = "SegUIVar.ttf"
+ALL_OUTPUTS = [*STATIC, VARIABLE]
 # Apple-only / variation tables that make no sense in the output
 DROP_STATIC = ["trak", "morx", "feat", "MERG", "meta", "STAT", "DSIG", "MVAR"]
 DROP_VAR = ["trak", "morx", "feat", "MERG", "meta", "DSIG", "MVAR"]
@@ -136,11 +153,11 @@ def pin(path, coords):
                                              updateFontNames=False)
 
 
-def apply_segoe_identity(font, seg, variable=False):
+def apply_segoe_identity(font, seg):
     """Copy Segoe's names, style bits and vertical metrics; recompute coverage bits."""
     font["name"] = seg["name"]
     ver = seg["name"].getDebugName(5)
-    font["name"].setName(f"{ver}; SF Pro 22.0d5e4 (Apple)", 5, 3, 1, 0x409)
+    font["name"].setName(f"{ver}; SF Pro {SF_VERSION} (Apple)", 5, 3, 1, 0x409)
     o, so = font["OS/2"], seg["OS/2"]
     for k in ("usWeightClass", "usWidthClass", "fsSelection", "usWinAscent", "usWinDescent",
               "sTypoAscender", "sTypoDescender", "sTypoLineGap", "fsType"):
@@ -194,23 +211,30 @@ def build_static(fname, weight, italic, tmp):
     if HINT:
         import ttfautohint
         hinted = out + ".hinted"
-        # hint_composites must stay off: it appends a glyph and corrupts GPOS anchors (caught by OTS).
-        ttfautohint.ttfautohint(in_file=out, out_file=hinted, no_info=True,
-                                default_script="latn", fallback_script="latn",
-                                hint_composites=False)
-        h, pre = TTFont(hinted), TTFont(out)
-        if h.getGlyphOrder() != pre.getGlyphOrder() or any(
-                h.reader[t] != pre.reader[t] for t in ("GPOS", "GSUB", "GDEF") if t in pre):
-            raise SystemExit(f"{fname}: hinting changed glyph order or layout tables; refusing to continue")
-        # ttfautohint may touch vertical metrics; put Segoe's back
-        for k in ("usWinAscent", "usWinDescent", "sTypoAscender", "sTypoDescender", "sTypoLineGap"):
-            setattr(h["OS/2"], k, getattr(seg["OS/2"], k))
-        for k in ("ascent", "descent", "lineGap"):
-            setattr(h["hhea"], k, getattr(seg["hhea"], k))
-        h.save(out)
-        os.remove(hinted)
-    log(f"static {fname}: wght {weight}{' italic' if italic else ''}, "
-        f"{len(TTFont(out).getBestCmap())} chars ({filled} gap-filled from Segoe)")
+        try:
+            # hint_composites must stay off: it appends a glyph and corrupts GPOS anchors (caught by OTS).
+            ttfautohint.ttfautohint(in_file=out, out_file=hinted, no_info=True,
+                                    default_script="latn", fallback_script="latn",
+                                    hint_composites=False)
+            h = TTFont(hinted)
+            with TTFont(out) as pre:
+                if h.getGlyphOrder() != pre.getGlyphOrder() or any(
+                        h.reader[t] != pre.reader[t] for t in ("GPOS", "GSUB", "GDEF") if t in pre):
+                    raise SystemExit(f"{fname}: hinting changed glyph order or layout tables; refusing to continue")
+            # ttfautohint may touch vertical metrics; put Segoe's back
+            for k in ("usWinAscent", "usWinDescent", "sTypoAscender", "sTypoDescender", "sTypoLineGap"):
+                setattr(h["OS/2"], k, getattr(seg["OS/2"], k))
+            for k in ("ascent", "descent", "lineGap"):
+                setattr(h["hhea"], k, getattr(seg["hhea"], k))
+            h.save(out)   # pre is closed first: Windows cannot overwrite a file that is still open
+            h.close()
+        finally:
+            if os.path.exists(hinted):
+                os.remove(hinted)
+    seg.close()
+    with TTFont(out, lazy=True) as f:
+        chars = len(f.getBestCmap())
+    log(f"static {fname}: wght {weight}{' italic' if italic else ''}, {chars} chars ({filled} gap-filled from Segoe)")
 
 
 def build_variable():
@@ -230,19 +254,36 @@ def build_variable():
     vf["STAT"] = seg["STAT"]
     filled = gap_fill(vf, seg)
     sort_layout(vf)
-    apply_segoe_identity(vf, seg, variable=True)
-    out = os.path.join(OUT, "SegUIVar.ttf")
+    apply_segoe_identity(vf, seg)
+    out = os.path.join(OUT, VARIABLE)
     vf.save(out)
-    log(f"variable SegUIVar.ttf: axes {[(a.axisTag, a.minValue, a.defaultValue, a.maxValue) for a in vf['fvar'].axes]}, "
-        f"{len(vf['fvar'].instances)} instances, {filled} gap-filled from Segoe")
+    axes = [(a.axisTag, a.minValue, a.defaultValue, a.maxValue) for a in vf["fvar"].axes]
+    log(f"variable {VARIABLE}: axes {axes}, {len(vf['fvar'].instances)} instances, {filled} gap-filled from Segoe")
+    seg.close()
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("apple", help="Apple fonts dir (output of fetch_apple_fonts.sh)")
+    ap.add_argument("segoe", help="dir with the original Segoe UI files")
+    ap.add_argument("out", help="output dir")
+    ap.add_argument("files", nargs="*", metavar="file", help=f"only build these: {', '.join(ALL_OUTPUTS)}")
+    ap.add_argument("--no-hint", action="store_true", help="skip ttfautohint (quick trial builds)")
+    args = ap.parse_args(argv)
+    unknown = [f for f in args.files if f not in ALL_OUTPUTS]
+    if unknown:
+        ap.error(f"unknown file(s): {', '.join(unknown)}")
+    configure(args.apple, args.segoe, args.out, hint=not args.no_hint)
+
+    wanted = args.files or ALL_OUTPUTS
+    if VARIABLE in wanted:
+        build_variable()
+    for fname, (w, it) in STATIC.items():
+        if fname in wanted:
+            with tempfile.TemporaryDirectory() as tmp:
+                build_static(fname, w, it, tmp)
+    log("BUILD DONE")
 
 
 if __name__ == "__main__":
-    only = [a for a in sys.argv[4:] if not a.startswith("--")]
-    build_variable()
-    for fname, (w, it) in STATIC.items():
-        if only and fname not in only:
-            continue
-        with tempfile.TemporaryDirectory() as tmp:
-            build_static(fname, w, it, tmp)
-    log("BUILD DONE")
+    main()

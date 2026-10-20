@@ -2,6 +2,7 @@
 
 Usage: emoji_coverage.py <emoji-test.txt> name=path[#index] ...
 An emoji counts as supported when HarfBuzz shapes it to a single non-.notdef glyph.
+Exit code 1 when the first font has emoji that the last font lacks (e.g. segoe=... built=...).
 """
 import collections
 import re
@@ -24,11 +25,15 @@ def ok(font, s):
     return len(g) == 1 and g[0] != 0
 
 
+if len(sys.argv) < 3:
+    sys.exit(__doc__)
+
 items = []
-for line in open(sys.argv[1], encoding="utf-8"):
-    m = re.match(r"^([0-9A-F ]+?)\s*;\s*fully-qualified\s*#\s*\S+\s+E(\d+\.\d+)\s+(.*)$", line)
-    if m:
-        items.append(("".join(chr(int(c, 16)) for c in m.group(1).split()), m.group(2), m.group(3)))
+with open(sys.argv[1], encoding="utf-8") as fh:
+    for line in fh:
+        m = re.match(r"^([0-9A-F ]+?)\s*;\s*fully-qualified\s*#\s*\S+\s+E(\d+\.\d+)\s+(.*)$", line)
+        if m:
+            items.append(("".join(chr(int(c, 16)) for c in m.group(1).split()), m.group(2), m.group(3)))
 
 fonts = {}
 for arg in sys.argv[2:]:
@@ -59,3 +64,7 @@ if len(names) >= 2:
         print(f"\nIn {base} but missing from {other}: {len(miss)}")
         for v, label in miss[:25]:
             print(f"   E{v} {label}")
+        if len(miss) > 25:
+            print(f"   ... and {len(miss) - 25} more")
+    final_miss = [1 for _, _, _, r in res if r[base] and not r[names[-1]]]
+    sys.exit(1 if final_miss else 0)
