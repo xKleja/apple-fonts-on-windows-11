@@ -12,6 +12,7 @@
 # PowerShell 5.1 and Windows tools expect CRLF; keep scripts consistent on every checkout.
 *.ps1  text eol=crlf
 *.wsb  text eol=crlf
+*.cmd  text eol=crlf
 
 *.png  binary
 *.ttf  binary
