@@ -17,16 +17,6 @@ English and Arabic are first-class.
 
 One command installs it, one command undoes it, and no Windows system file is modified.
 
-![Original Segoe UI (left) vs the Apple build (right), every weight, English and Arabic](docs/images/segoe-vs-apple.png)
-
-> **Public educational project — proprietary fonts are not open source.** This is an independent
-> exploration of Windows typography and font compatibility, not an official Apple or Microsoft product.
-> Source-code publication does not grant a license to Apple's or Microsoft's fonts. Do not redistribute
-> original or modified proprietary font files, including release archives, without the required rights.
-> Review the applicable license terms before downloading, building, installing, or sharing any fonts.
-
----
-
 ## Contents
 
 - [What you get](#what-you-get)
