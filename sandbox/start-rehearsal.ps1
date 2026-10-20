@@ -12,7 +12,12 @@
       1-installed screenshots + font report with the Apple fonts    -> restore, restart
       2-restored  screenshots + font report after undo              -> done
     Follow progress in sandbox-results\rehearsal.log. Closing the Sandbox window discards it.
+
+    -Mode Scripts runs sandbox\script-test.ps1 instead: a functional test of the install and restore
+    scripts with no restarts (install, guards, restore, simulated crash + -Resume, restore), checking
+    registry, files and state.json after every step. Result: sandbox-results\script-test.log.
 #>
+param([ValidateSet('Full', 'Scripts')][string]$Mode = 'Full')
 $ErrorActionPreference = 'Stop'
 if (-not (Test-Path "$env:WINDIR\System32\WindowsSandbox.exe")) {
     throw 'Windows Sandbox is not enabled. Elevated: Enable-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM -All, then restart.'
@@ -25,18 +30,22 @@ if ((Get-ChildItem (Join-Path $repo 'fonts\ui') -Filter *.ttf -ErrorAction Silen
 New-Item -ItemType Directory -Force $results | Out-Null
 Get-ChildItem $results | Remove-Item -Recurse -Force
 
+$script     = if ($Mode -eq 'Scripts') { 'script-test.ps1' } else { 'rehearsal.ps1' }
+$repoXml    = [Security.SecurityElement]::Escape($repo)
+$resultsXml = [Security.SecurityElement]::Escape($results)
 $wsb = @"
 <Configuration>
   <Networking>Disable</Networking>
   <MemoryInMB>8192</MemoryInMB>
   <MappedFolders>
-    <MappedFolder><HostFolder>$repo</HostFolder><SandboxFolder>C:\src</SandboxFolder><ReadOnly>true</ReadOnly></MappedFolder>
-    <MappedFolder><HostFolder>$results</HostFolder><SandboxFolder>C:\results</SandboxFolder><ReadOnly>false</ReadOnly></MappedFolder>
+    <MappedFolder><HostFolder>$repoXml</HostFolder><SandboxFolder>C:\src</SandboxFolder><ReadOnly>true</ReadOnly></MappedFolder>
+    <MappedFolder><HostFolder>$resultsXml</HostFolder><SandboxFolder>C:\results</SandboxFolder><ReadOnly>false</ReadOnly></MappedFolder>
   </MappedFolders>
-  <LogonCommand><Command>powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\src\sandbox\rehearsal.ps1</Command></LogonCommand>
+  <LogonCommand><Command>powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\src\sandbox\$script</Command></LogonCommand>
 </Configuration>
 "@
 $wsbPath = Join-Path $env:TEMP 'apple-fonts-rehearsal.wsb'
 Set-Content $wsbPath $wsb -Encoding UTF8
 Start-Process $wsbPath
-"Sandbox starting. Progress: $results\rehearsal.log (UTF-16). Screenshots land in $results\<phase>\."
+if ($Mode -eq 'Scripts') { "Sandbox starting. Result: $results\script-test.log" }
+else { "Sandbox starting. Progress: $results\rehearsal.log (UTF-16). Screenshots land in $results\<phase>\." }

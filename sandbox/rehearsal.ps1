@@ -71,7 +71,7 @@ function Capture($phase) {
 
     Shot '01-desktop'
     Key 0x5B; Shot '02-start-menu'; Key 0x1B; Start-Sleep 1
-    $p = Start-Process 'ms-settings:' -PassThru; Start-Sleep 6; Shot '03-settings'
+    Start-Process 'ms-settings:'; Start-Sleep 6; Shot '03-settings'
     Get-Process SystemSettings -ErrorAction SilentlyContinue | Stop-Process -Force
     Start-Process explorer.exe 'C:\Windows'; Start-Sleep 4; Shot '04-explorer'
     (New-Object -ComObject Shell.Application).Windows() | ForEach-Object { $_.Quit() }
@@ -101,14 +101,16 @@ switch ($current) {
         Start-Sleep 20   # let the shell finish starting
         Capture '0-before'
         Log '=== install'
-        & "$Src\scripts\install-macos-fonts.ps1" -FontsDir "$Src\fonts" -BackupDir $Backup -NoRestorePoint *>&1 | ForEach-Object { Log $_ }
+        try { & "$Src\scripts\install-macos-fonts.ps1" -FontsDir "$Src\fonts" -BackupDir $Backup -NoRestorePoint *>&1 | ForEach-Object { Log $_ } }
+        catch { Log "INSTALL FAILED: $($_.Exception.Message)" }
         NextAfterRestart '1-installed'
     }
     '1-installed' {
         Start-Sleep 20
         Capture '1-installed'
         Log '=== restore'
-        & "$Src\scripts\restore-macos-fonts.ps1" -BackupDir $Backup *>&1 | ForEach-Object { Log $_ }
+        try { & "$Src\scripts\restore-macos-fonts.ps1" -BackupDir $Backup *>&1 | ForEach-Object { Log $_ } }
+        catch { Log "RESTORE FAILED: $($_.Exception.Message)" }
         NextAfterRestart '2-restored'
     }
     '2-restored' {

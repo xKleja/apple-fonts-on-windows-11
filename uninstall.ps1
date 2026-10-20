@@ -5,6 +5,8 @@
     reverses what the install actually changed.
 .EXAMPLE
     .\uninstall.ps1
+.EXAMPLE
+    .\uninstall.ps1 -BackupDir D:\FontBackup     # if the install used -BackupDir
 #>
 [CmdletBinding()]
 param(
@@ -13,15 +15,21 @@ param(
     [switch]$Elevated
 )
 $ErrorActionPreference = 'Stop'
+$Interactive = [Environment]::UserInteractive -and -not [Console]::IsInputRedirected
+
+function Pause-IfElevated {
+    if ($Elevated -and $Interactive) { [void](Read-Host "`nPress Enter to close") }
+}
 
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
     [Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
     'Asking for administrator rights (click Yes on the UAC prompt)...'
     $argv = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"", '-Elevated')
-    if ($BackupDir) { $argv += '-BackupDir', "`"$BackupDir`"" }
+    if ($BackupDir) { $argv += '-BackupDir', ('"{0}"' -f [IO.Path]::GetFullPath($BackupDir).TrimEnd('\')) }
     if ($NoRestartPrompt) { $argv += '-NoRestartPrompt' }
-    $p = Start-Process powershell.exe -Verb RunAs -ArgumentList $argv -Wait -PassThru
+    try { $p = Start-Process powershell.exe -Verb RunAs -ArgumentList $argv -Wait -PassThru }
+    catch { throw 'Administrator rights were declined; nothing was changed.' }
     exit $p.ExitCode
 }
 
@@ -31,13 +39,17 @@ try {
     & (Join-Path $PSScriptRoot 'scripts\restore-macos-fonts.ps1') @params
 } catch {
     Write-Host "`nRESTORE FAILED: $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host 'See the restore-*.log next to state.json. Last resort: System Restore point "Before macOS fonts".'
-    if ($Elevated) { Read-Host 'Press Enter to close' }
+    Write-Host 'See the restore-*.log next to state.json. Running .\uninstall.ps1 again retries what failed.'
+    Write-Host 'Last resort: System Restore point "Before macOS fonts".'
+    Pause-IfElevated
     exit 1
 }
 
-if (-not $NoRestartPrompt) {
+if (-not $NoRestartPrompt -and $Interactive) {
     $answer = Read-Host "`nRestart Windows now to finish? (y/n)"
-    if ($answer -match '^(y|yes)$') { Restart-Computer -Force }
-    else { 'Restart later to finish.' }
+    if ($answer -match '^(y|yes)$') {
+        shutdown.exe /r /t 30 /c "Restarting to restore the Windows fonts. Save your work. (shutdown /a cancels)"
+        'Restarting in 30 seconds. Run "shutdown /a" to cancel.'
+    } else { 'Restart later to finish.' }
 }
+Pause-IfElevated
