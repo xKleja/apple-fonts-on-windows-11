@@ -47,6 +47,17 @@ body:
       render: text
     validations:
       required: true
+  - type: input
+    id: options
+    attributes:
+      label: Options used
+      description: Any switches you passed, for example `-SkipEmoji`, `-Resume`, `-BackupDir D:\x`. Leave empty if none.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Install or restore log (optional)
+      description: The latest `install-*.log` or `restore-*.log` from `%ProgramData%\AppleFontsOnWindows\` (or your `-BackupDir`). Remove usernames and personal paths first.
+      render: text
   - type: checkboxes
     id: disclaimer
     attributes:

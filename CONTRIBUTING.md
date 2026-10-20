@@ -14,12 +14,16 @@ Thanks for helping out. Please read the disclaimer at the top of the [README](RE
   `validation/validate_ui_fonts.py` (`ALL HARD CHECKS PASSED`), `validation/render_all_glyphs.py`
   (0 blank), and `validation/winload.ps1` (all load), plus a look at the specimen sheets (Arabic in
   particular). Do not weaken a check to make it pass.
-- **Test install changes in Windows Sandbox** with `sandbox/start-rehearsal.ps1` before proposing them.
+- **Test install changes in Windows Sandbox** before proposing them: fetch the fonts with
+  `.\install.ps1 -DownloadOnly`, then run `sandbox\start-rehearsal.ps1 -Mode Scripts` (functional test,
+  must end with `SCRIPT TEST PASSED`) and, for visual changes, `sandbox\start-rehearsal.ps1`.
   Do not run the real install or uninstall on a machine you care about without a backup.
 - Do not add startup items, scheduled tasks or services.
+- Contributions are accepted under the [MIT License](LICENSE). Do not contribute font files or links to
+  font downloads you do not have the rights to.
 
 ## Pull requests
 
 - Keep commits small and descriptive, one concern each.
-- Update the README and docs when behaviour changes.
+- Update the README and docs when behavior changes.
 - Describe how you tested the change (parsers, Sandbox rehearsal, validation output).

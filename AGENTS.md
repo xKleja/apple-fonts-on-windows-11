@@ -35,6 +35,9 @@ New York families, with full English and Arabic support.
   ```powershell
   foreach ($exe in 'powershell.exe','pwsh.exe') { & $exe -NoProfile -Command "Get-ChildItem -Recurse -Filter *.ps1 | % { `$e=`$null; [void][System.Management.Automation.Language.Parser]::ParseFile(`$_.FullName,[ref]`$null,[ref]`$e); if (`$e) { `$_.Name } }" }
   ```
+  No output means every file parses.
+- **Run the tools after any "lint fix"** and check their verdicts did not change (see
+  [docs/lessons-learned.md](docs/lessons-learned.md): a suggested refactor once made every font "fail").
 - `.ps1` files: CRLF (enforced by `.gitattributes`); ASCII only, or a UTF-8 BOM if non-ASCII text is needed.
 - PowerShell variables are case-insensitive: never use two names that differ only by case (`$State` vs `$state`).
 - Python tools: fontTools-based, Python 3.12+, deps in `build/requirements.txt`.
@@ -48,4 +51,4 @@ New York families, with full English and Arabic support.
 | Is everything still applied? | `.\status.ps1` |
 | New macOS with new emoji or SF fonts | [docs/rebuild.md](docs/rebuild.md), then a new release `vX.Y.Z` |
 | Windows update broke it | `status.ps1`; if `[DIFF]`, uninstall + install (ask the user first) |
-| Change install behaviour | Edit `scripts/*.ps1`, parse-check both PowerShells, rehearse in Sandbox, update README and docs |
+| Change install behavior | Edit `install.ps1`, `uninstall.ps1` or `scripts/*.ps1`; parse-check both PowerShells; run `sandbox\start-rehearsal.ps1 -Mode Scripts` until `SCRIPT TEST PASSED`; update README, docs and CHANGELOG |

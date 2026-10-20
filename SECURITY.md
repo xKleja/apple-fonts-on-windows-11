@@ -9,6 +9,10 @@ anything that could be exploited.
 Include what you found, how to reproduce it, and the affected files or versions. Reports are handled on
 a best-effort basis.
 
+## Supported versions
+
+Only the latest release and the `main` branch receive fixes.
+
 ## Scope
 
 This covers the installer and tooling in this repository (PowerShell scripts, build and validation

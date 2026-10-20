@@ -33,7 +33,7 @@ A per-user copy of a family (`HKCU\...\Fonts`) wins over the system one, so a pe
 The common community trick (`FontSubstitutes "Segoe UI"="SF Pro Text"`) is known to give broken
 bold and leaves Start/Settings/Search on Segoe ([Microsoft Q&A report](https://learn.microsoft.com/en-us/answers/questions/3919601/bold-font-rendering-issue-after-replacing-segoe-ui)).
 The cause: Windows asks for *"Segoe UI, weight 700"* and the substituted font's own names and
-style bits do not match, so Windows guesses or synthesises bold.
+style bits do not match, so Windows guesses or synthesizes bold.
 
 Each built file instead carries **Segoe's exact identity** around Apple's glyphs:
 
@@ -68,7 +68,7 @@ default moved to 17. The axes are then presented in Segoe's user space (`opsz` 5
 ### Segoe UI Emoji
 
 Apple Color Emoji built by [samuelngs/apple-emoji-ttf](https://github.com/samuelngs/apple-emoji-ttf)
-(Windows recipe: Segoe UI Emoji names and metrics, CBDT colour bitmaps) from the Mac's own macOS 27 font,
+(Windows recipe: Segoe UI Emoji names and metrics, CBDT color bitmaps) from macOS 27's own font,
 installed the same way as the UI fonts: as `SFUI-seguiemj.ttf`, with the "Segoe UI Emoji"
 registry entry pointed at it.
 
@@ -77,16 +77,27 @@ registry entry pointed at it.
 `scripts/install-macos-fonts.ps1` (started by `install.ps1`):
 
 1. Verify every font against `fonts/SHA256SUMS.txt` and `fonts/ui/SHA256SUMS.txt`. Any mismatch stops it before anything changes.
-2. Safety nets: System Restore point (Windows allows one per 24 h), exports of the HKLM and HKCU font keys, `state.json`.
-3. Install the 155 SF / New York fonts as new fonts. It refuses to overwrite an existing file.
-4. Repoint the 13 Segoe UI / Segoe UI Variable entries and unregister per-user overrides.
-5. Repoint Segoe UI Emoji.
-6. Clear the font cache (FontCache service data and `FNTCACHE.DAT`), then ask for a restart.
+2. **Pre-flight**: find every conflict before the first change: a different font file with the same
+   name already in `C:\Windows\Fonts`, a font name already registered to another file, a missing
+   Segoe registry entry, or a previous uninstall whose file deletions are still waiting for a restart.
+3. Safety nets: System Restore point (when System Protection is on; Windows allows one per 24 h),
+   exports of the HKLM and HKCU font keys, `state.json`.
+4. Install the 155 SF / New York fonts as new fonts. A byte-identical SF font that is already
+   installed is left alone (if it was only unregistered, just its registry entry is added and later removed).
+5. Repoint the 13 Segoe UI / Segoe UI Variable entries and unregister per-user overrides.
+6. Repoint Segoe UI Emoji.
+7. Clear the font cache (FontCache service data and `FNTCACHE.DAT`), then ask for a restart.
 
-`state.json` is written after **every** change, so an interrupted run can be finished
-(`install.ps1 -Resume`) or fully undone (`uninstall.ps1`).
+Every change is **recorded in `state.json` before it is made**, and every copied file is checked
+against its checksum. `state.json` is written atomically, so a power cut cannot leave it half-written.
+An interrupted run can therefore be finished (`install.ps1 -Resume`, which also remembers
+`-SkipUI` / `-SkipEmoji`) or fully undone (`uninstall.ps1`).
 
 `scripts/restore-macos-fonts.ps1` (started by `uninstall.ps1`) reverses exactly what `state.json`
-records. Files still in use are scheduled for deletion at the next restart.
+records. It refuses a `state.json` with unexpected entries, carries on past individual failures and
+reports them (re-running retries them), and schedules files that are still in use for deletion at the
+next restart.
 
-Backups and logs: `%ProgramData%\AppleFontsOnWindows\` (the first install on the original PC used `E:\FontBackup\`; both are found automatically).
+Backups and logs: `%ProgramData%\AppleFontsOnWindows\`, readable and writable by administrators only
+(the elevated scripts trust `state.json`). Use `-BackupDir` on install, status and uninstall to use
+another folder.

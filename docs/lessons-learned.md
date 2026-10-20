@@ -6,7 +6,7 @@ Each of these cost real debugging time. They are why the code looks the way it d
 
 - **Do not remove overlaps when instancing** (`instancer.OverlapMode.REMOVE`). Skia path-ops
   mangled SF Arabic glyphs (`ع` final form lost half its ink at weight 700, visible in Bold). Use
-  `KEEP_AND_SET_FLAGS`; Windows rasterisers handle overlapping contours fine.
+  `KEEP_AND_SET_FLAGS`; Windows rasterizers handle overlapping contours fine.
 - **ttfautohint `hint_composites=True` corrupts GPOS** (it appends a glyph, which shifts anchor offsets;
   OTS: "Bad Anchor table format"). Keep it off. The build now refuses to continue if hinting changes
   the glyph order or any layout table.
@@ -36,14 +36,37 @@ Each of these cost real debugging time. They are why the code looks the way it d
 - `Checkpoint-Computer` only allows one restore point per 24 h and only *warns* otherwise.
 - Never leave a step that can hang without a timeout (`Invoke-Tool`).
 - Scripts with non-ASCII text need a UTF-8 BOM for Windows PowerShell 5.1.
-- Windows Sandbox: a `.wsb` cannot use relative paths (`start-rehearsal.ps1` generates it), and its
-  `LogonCommand` runs again after an in-sandbox restart (`rehearsal.ps1` uses per-phase lock files).
+- **Record before you change.** Writing `state.json` *after* a registry change leaves a window where a
+  crash makes the change unrecoverable. Every step now records first, then acts, and `-Resume` re-applies
+  recorded steps. A pre-flight finds all conflicts before the first change.
+- **`$null` is not null for .NET string arguments.** `[IO.File]::Replace($a, $b, $null)` and
+  `MoveFileEx($p, $null, ...)` receive `""` and fail. Pass `[NullString]::Value`.
+- Write `state.json` to a temp file and swap it in (`[IO.File]::Replace`): a power cut mid-write must not
+  corrupt the only record of what to undo. The backup folder is admin-only, because the elevated
+  restore trusts its contents (and validates them anyway: `Assert-SafeState`).
+- Windows Sandbox: a `.wsb` cannot use relative paths (`start-rehearsal.ps1` generates it).
+  An in-sandbox restart did not reliably resume the logon script, so script correctness is tested by
+  `start-rehearsal.ps1 -Mode Scripts` (no restarts); the full mode is for screenshots.
+- **The sandbox shares the host's Windows files but not its registry.** If the host has SF fonts
+  installed, the sandbox sees the files in `C:\Windows\Fonts` without registry entries, which is
+  exactly the "file present but not registered" case the installer must handle (it registers them,
+  records `KeepFile`, and uninstall removes only the registry entry).
 
 ## Validating
 
 - ClearType is disabled on 32-bit **alpha** bitmaps. GDI specimen sheets must use 24-bit bitmaps or a
   DIB section, or every renderer looks greyscale and smudged.
 - At 100 % scale Arabic marks are 1–2 px and look missing in any font; check at the real UI size
-  (the original PC runs 4K at 175 %, so UI text is about 21 px).
+  (a 4K display at 175 % scaling gives UI text of about 21 px).
 - A render test that never fails proves nothing. `render_all_glyphs.py --reference` exists for the
   positive control.
+- **Run the tools after "lint fixes".** Ruff's SIM118 suggests `for tag in font` instead of
+  `font.keys()`, but a fontTools `TTFont` is not iterable over its tags: every font then "failed" with
+  `KeyError('0')`.
+- `validate_ui_fonts.py` must not count the fonts under test as their own fallback: with the install
+  active, the registry points at the `SFUI-*` files, which are skipped explicitly.
+
+## Build scripts
+
+- Resolve output paths to absolute **before** any `cd` (`build_emoji.sh` once wrote its result into a
+  temp folder that the exit trap then deleted, and still printed success).

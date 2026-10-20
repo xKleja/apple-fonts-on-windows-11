@@ -1,6 +1,6 @@
 # fonts/
 
-The font files are **not stored in git** (they are ~1 GB). They are attached to the
+The font files are **not stored in git** (about 1 GB unpacked, a 0.7 GB download). They are attached to the
 GitHub Release as three zips; `install.ps1` downloads and unpacks them here automatically.
 
 | Release asset         | Unpacks to   | Contents |

@@ -15,7 +15,7 @@ Settings, File Explorer, dialogs, every app's menus), **SF Arabic** for Arabic U
 **Apple Color Emoji** everywhere, and the full **SF / New York** families installed for apps.
 English and Arabic are first-class.
 
-One command installs it, one command undoes it, and no Windows system file is modified.
+One command installs it, one command undoes it, and no Windows font file is modified.
 
 ## Contents
 
@@ -31,6 +31,7 @@ One command installs it, one command undoes it, and no Windows system file is mo
 - [Repository layout](#repository-layout)
 - [How it works (short version)](#how-it-works-short-version)
 - [Rebuilding for a new macOS](#rebuilding-for-a-new-macos)
+- [License](#license)
 
 ---
 
@@ -49,10 +50,11 @@ Aptos, Times…), and the console / code fonts.
 
 ## Requirements
 
-- Windows 11 (built and verified on 25H2, build 26200)
+- Windows 11, tested on 25H2 (build 26200). Other Windows 11 builds, Windows 10, ARM64 PCs and
+  non-English Windows editions are untested.
 - An administrator account (you will click **Yes** on one UAC prompt)
-- An internet connection for the first run. The fonts are downloaded from the release over HTTPS;
-  no GitHub account, sign-in or GitHub CLI is needed.
+- An internet connection for the first run (the fonts are downloaded from the release over HTTPS;
+  no GitHub account or tools needed)
 - Free space: about 2 GB on the drive holding this folder (0.7 GB download, deleted after unpacking,
   plus 1 GB of unpacked fonts) and about 1 GB on the Windows drive for the installed fonts
 
@@ -71,8 +73,8 @@ What happens:
 
 1. The three font zips are downloaded from the [latest release](../../releases/latest), verified (SHA-256), and unpacked into `fonts\`.
 2. A **UAC prompt** appears. Click **Yes**.
-3. In the elevated window, every font is checked again against the checksums in git, a restore point
-   and backups are made, then the fonts are installed and Windows' Segoe UI / Segoe UI Variable /
+3. In the elevated window, every font is checked again against the checksums in git, every possible
+   conflict is checked before anything changes, a restore point and backups are made, then the fonts are installed and Windows' Segoe UI / Segoe UI Variable /
    Segoe UI Emoji entries are pointed at the Apple builds.
 4. It asks to **restart**. Say yes, because running apps only pick up a system font change after a restart.
 
@@ -86,6 +88,11 @@ Options:
 | `.\install.ps1 -DownloadOnly` | Only download, verify and unpack the fonts. Windows is not touched. |
 | `.\install.ps1 -Tag v1.0.0` | Install a specific release instead of the latest |
 | `.\install.ps1 -NoRestartPrompt` | Do not ask about restarting |
+| `.\install.ps1 -NoRestorePoint` | Skip the System Restore point |
+| `.\install.ps1 -BackupDir <path>` | Keep state, logs and registry backups somewhere else (pass the same `-BackupDir` to `status.ps1` and `uninstall.ps1`) |
+
+`-Resume` remembers `-SkipUI` / `-SkipEmoji` from the interrupted run, and `status.ps1` only checks the
+parts that were installed.
 
 Offline install: download `fonts-sf.zip`, `fonts-ui.zip`, `fonts-emoji.zip` from the
 release page, unzip all three into `fonts\` (giving `fonts\SF\`, `fonts\ui\`, `fonts\emoji\`), then run `.\install.ps1`.
@@ -134,13 +141,15 @@ after updates. If anything shows `[DIFF]`:
 | UI still looks like Segoe right after installing | Restart Windows (not just sign out). Then run `.\status.ps1`. |
 | Emoji are still Windows emoji | Same: restart. `status.ps1` should show `Segoe UI Emoji -> SFUI-SEGUIEMJ.TTF`. |
 | `Download of ... failed` | Check the internet connection (and any proxy), then run `install.ps1` again. Or use the offline install above. |
-| `Administrator rights were declined` | Run it again and click **Yes** on the UAC prompt. |
-| `Checksum mismatch` | A font file changed or a download got corrupted. Delete `fonts\SF`, `fonts\emoji` and the `*.ttf` in `fonts\ui`, then run `install.ps1` again. |
+| `Checksum mismatch` / `Missing font` | A font file changed or a download got corrupted. Delete `fonts\SF`, `fonts\emoji` and the `*.ttf` in `fonts\ui`, then run `install.ps1` again. |
 | `Already installed (found ...state.json)` | It is installed. Use `uninstall.ps1` first, or `install.ps1 -Resume` if the last run was interrupted. |
-| Install stopped half-way | `.\install.ps1 -Resume` finishes it, or `.\uninstall.ps1` undoes whatever was done. Progress is saved after every step. |
+| `C:\Windows\Fonts already has a different SF-Pro.ttf` (or another SF font), or `The font name ... is already registered` | Another copy of that SF font is installed. Uninstall it (Settings > Personalization > Fonts), then run `install.ps1` again. Nothing was changed. |
+| `A previous uninstall is still waiting ...` | Restart Windows first, then install. |
+| Install stopped half-way | `.\install.ps1 -Resume` finishes it, or `.\uninstall.ps1` undoes whatever was done. Every change is recorded before it is made. |
+| `Administrator rights were declined` | Run it again and click **Yes** on the UAC prompt. |
 | Some text slightly truncated ("…") in a tight spot | SF Pro is about 6–15 % wider than Segoe (measured). This is cosmetic; there is no fix short of using Segoe there. |
-| An old app shows blank space instead of an emoji | Apple's emoji are colour-only, so very old GDI-only apps that cannot draw colour fonts show nothing. Modern apps are fine. |
-| Windows will not start properly (never seen) | Boot to Recovery, then System Restore and pick **"Before macOS fonts"**. Or use your system image backup. |
+| An old app shows blank space instead of an emoji | Apple's emoji are color-only, so very old GDI-only apps that cannot draw color fonts show nothing. Modern apps are fine. |
+| Windows will not start properly (not observed in testing) | Boot to Recovery, then System Restore and pick **"Before macOS fonts"**. Or use your system image backup. |
 
 Logs of every run: `%ProgramData%\AppleFontsOnWindows\install-*.log` / `restore-*.log`.
 
@@ -148,11 +157,24 @@ Logs of every run: `%ProgramData%\AppleFontsOnWindows\install-*.log` / `restore-
 
 - **No Windows font file is modified or deleted.** Replacements are added as new `SFUI-*.ttf` files
   and only the registry entries are repointed. `sfc /scannow` stays clean.
-- Every font is checked against SHA-256 checksums tracked in git before anything changes.
-- Before changing anything: a System Restore point (`Before macOS fonts`, at most one per 24 h) and
-  exports of the font registry keys, in `%ProgramData%\AppleFontsOnWindows\`.
-- `state.json` records every change as it happens. Uninstall uses it to undo exactly that.
+- Every font is checked against SHA-256 checksums tracked in git before anything changes, and every
+  copied file is checked again after copying.
+- All conflicts are found before the first change (see Troubleshooting); if one is found, nothing is changed.
+- Before changing anything: a System Restore point (`Before macOS fonts`; only when System Protection
+  is on, at most one per 24 h) and exports of the font registry keys, in `%ProgramData%\AppleFontsOnWindows\`
+  (administrators only).
+- `state.json` records every change **before** it is made. Uninstall uses it to undo exactly that.
 - Nothing runs at startup, and no scheduled task or service is added.
+
+### What the install changes
+
+- Adds up to 155 SF / New York font files and 14 `SFUI-*.ttf` files to `C:\Windows\Fonts`.
+- Adds registry entries for the SF / New York fonts and repoints the 13 Segoe UI / Segoe UI Variable
+  entries and the Segoe UI Emoji entry under `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts`.
+- Removes per-user registrations of the same Segoe families (`HKCU\...\Fonts`), which would override
+  the system ones. They are recorded and put back on uninstall.
+- Clears the Windows font cache (it is rebuilt at the next restart).
+- Writes `state.json`, logs and registry exports to `%ProgramData%\AppleFontsOnWindows\`.
 - Before the first real install, the release passed 311 automated checks, a render of every glyph with
   Windows' own engines, and a rehearsal in Windows Sandbox. See [docs/validation.md](docs/validation.md).
 
@@ -165,7 +187,7 @@ Logs of every run: `%ProgramData%\AppleFontsOnWindows\install-*.log` / `restore-
 | SF Arabic | 20.0d1e2 | same |
 | SF Hebrew, SF Armenian, SF Georgian | 20.0d1e1 | same |
 | New York | 17.0d5e1 (static OTFs 16.0d2e2) | same |
-| Apple Color Emoji | macOS 27.0 (build 26A5425a) | the Mac's `/System/Library/Fonts`, converted with [apple-emoji-ttf](https://github.com/samuelngs/apple-emoji-ttf) @ `484daf4` |
+| Apple Color Emoji | macOS 27.0 (build 26A5425a) | macOS's `/System/Library/Fonts`, converted with [apple-emoji-ttf](https://github.com/samuelngs/apple-emoji-ttf) @ `484daf4` |
 | UI replacements | built for Segoe UI 5.72 / Segoe UI Variable 2.03 | `build/build_ui_fonts.py` |
 
 Release assets: `fonts-sf.zip` (155 Apple fonts), `fonts-ui.zip` (13 UI replacements),
@@ -184,9 +206,14 @@ scripts/
 fonts/                   filled from the release; SHA256SUMS.txt files are tracked in git
 build/                   macOS pipeline: fetch Apple fonts, build UI fonts, build emoji
 validation/              checks, render-every-glyph, specimen sheets, Arabic diagnostics
-sandbox/                 Windows Sandbox rehearsal (install -> restart -> restore)
+sandbox/                 Windows Sandbox tests: script test (no restarts) and full rehearsal
 docs/                    how it works, validation evidence, rebuild guide, lessons learned
+.github/                 CI, Dependabot, issue forms, PR template
 AGENTS.md                rules for AI agents working in this repo
+CONTRIBUTING.md          how to contribute
+SECURITY.md              how to report a security issue
+CHANGELOG.md             release history
+LICENSE, NOTICE          MIT license for the code; what it does not cover
 ```
 
 ## How it works (short version)
@@ -210,4 +237,4 @@ When a new macOS brings new emoji or SF versions: [docs/rebuild.md](docs/rebuild
 The code and documentation in this repository are released under the [MIT License](LICENSE).
 
 The MIT license does **not** cover any Apple or Microsoft fonts. Those remain under their owners'
-licenses, as described in the disclaimer at the top of this page.
+licenses, as described in the disclaimer at the top of this page and in [NOTICE](NOTICE).
