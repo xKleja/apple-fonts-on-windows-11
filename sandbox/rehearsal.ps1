@@ -6,7 +6,7 @@
 $ErrorActionPreference = 'Continue'
 $Src     = 'C:\src'          # the repo, mapped read-only by start-rehearsal.ps1
 $Out     = 'C:\results'      # mapped back to the host
-$Phase   = 'C:\rehearsal-phase.txt'
+$PhaseFile = 'C:\rehearsal-phase.txt'
 $Backup  = 'C:\FontBackup'
 $Self    = 'C:\src\sandbox\rehearsal.ps1'
 New-Item -ItemType Directory -Force $Out | Out-Null
@@ -84,14 +84,14 @@ function Capture($phase) {
 }
 
 function NextAfterRestart($phase) {
-    Set-Content $Phase $phase
+    Set-Content $PhaseFile $phase
     New-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce' -Name Rehearsal -Force `
         -Value "powershell.exe -NoProfile -ExecutionPolicy Bypass -File $Self" | Out-Null
     Log "restarting into phase $phase"
     shutdown.exe /r /t 3
 }
 
-$current = if (Test-Path $Phase) { Get-Content $Phase } else { '0-before' }
+$current = if (Test-Path $PhaseFile) { Get-Content $PhaseFile } else { '0-before' }
 # Both the sandbox LogonCommand and RunOnce may start this after a restart: run each phase once.
 try { New-Item -ItemType File "C:\rehearsal-lock-$current" -ErrorAction Stop | Out-Null }
 catch { exit 0 }
@@ -116,7 +116,7 @@ switch ($current) {
     '2-restored' {
         Start-Sleep 20
         Capture '2-restored'
-        Set-Content $Phase 'done'
+        Set-Content $PhaseFile 'done'
         Log '=== REHEARSAL COMPLETE'
     }
 }

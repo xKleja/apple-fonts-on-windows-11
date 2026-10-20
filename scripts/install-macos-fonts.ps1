@@ -67,18 +67,18 @@ function Read-Sums([string]$Dir) {
     $map
 }
 
-function Test-Sums([string]$Dir, $Sums) {
-    foreach ($rel in $Sums.Keys) {
+function Test-Sums([string]$Dir, $Expected) {
+    foreach ($rel in $Expected.Keys) {
         $path = Join-Path $Dir $rel
         if (-not (Test-Path -LiteralPath $path)) { throw "Missing font: $path. Nothing was changed." }
-        if ((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ne $Sums[$rel]) { throw "Checksum mismatch: $path. Nothing was changed." }
+        if ((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ne $Expected[$rel]) { throw "Checksum mismatch: $path. Nothing was changed." }
     }
 }
 
 # Copy, then check the copy byte-for-byte (catches a full disk or a file swapped mid-install).
-function Copy-Verified([string]$From, [string]$To, [string]$Hash) {
+function Copy-Verified([string]$From, [string]$To, [string]$Expected) {
     Copy-Item -LiteralPath $From -Destination $To -Force
-    if ((Get-FileHash -LiteralPath $To -Algorithm SHA256).Hash -ne $Hash) { throw "Copy of $From to $To is corrupt." }
+    if ((Get-FileHash -LiteralPath $To -Algorithm SHA256).Hash -ne $Expected) { throw "Copy of $From to $To is corrupt." }
 }
 
 function Get-FontEntries {
