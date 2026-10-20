@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/xKleja/apple-fonts-on-windows-11/security/advisories/new
+    about: Please report security issues privately through a security advisory, not a public issue.

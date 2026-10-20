@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Font rehearsal</title>
+<style>
+  body { font-family: system-ui, "Segoe UI", sans-serif; margin: 24px; font-size: 18px; }
+  h2 { margin: 18px 0 6px; font-size: 14px; color: #666; font-weight: 600; }
+  .w300 { font-weight: 300 } .w400 { font-weight: 400 } .w600 { font-weight: 600 } .w700 { font-weight: 700 } .w900 { font-weight: 900 }
+  .ar { direction: rtl; text-align: right; }
+  .emoji { font-size: 32px; }
+  .seg { font-family: "Segoe UI"; } .segvar { font-family: "Segoe UI Variable Text"; }
+</style>
+</head>
+<body>
+  <h2>system-ui weights</h2>
+  <div class="w300">Light 300: The quick brown fox jumps over the lazy dog</div>
+  <div class="w400">Regular 400: The quick brown fox jumps over the lazy dog</div>
+  <div class="w600">Semibold 600: The quick brown fox jumps over the lazy dog</div>
+  <div class="w700">Bold 700: The quick brown fox jumps over the lazy dog</div>
+  <div class="w900">Black 900: The quick brown fox jumps over the lazy dog</div>
+  <div class="w400"><i>Italic: The quick brown fox jumps over the lazy dog</i> <b><i>Bold italic</i></b></div>
+  <h2>Arabic</h2>
+  <div class="ar w400">مرحبًا بالعالم! الإعدادات، مستكشف الملفات والمفكرة ٠١٢٣٤٥٦٧٨٩</div>
+  <div class="ar w700">نص عريض: لا إله إلا الله — الخط العربي</div>
+  <h2>Accents, Greek, Cyrillic, Hebrew</h2>
+  <div>Éléphant à côté — naïve façade, Œuvre, Šťastný Łódź · Καλημέρα · Привет · שלום</div>
+  <h2>Named families</h2>
+  <div class="seg">"Segoe UI": Settings, File Explorer, Notepad</div>
+  <div class="segvar">"Segoe UI Variable Text": Settings, File Explorer, Notepad</div>
+  <h2>Emoji</h2>
+  <div class="emoji">😀 😂 ❤️ 👍🏽 👨‍👩‍👧‍👦 🏳️‍🌈 🇺🇸 🇪🇬 🫠 🪿 🙂‍↔️</div>
+</body>
+</html>

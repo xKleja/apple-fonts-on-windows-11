@@ -1,0 +1,354 @@
+PASS segoeuil.ttf: OpenType Sanitizer 
+PASS segoeuil.ttf: all tables decompile
+PASS segoeuil.ttf: 37443 glyph outlines identical to Apple's (largest point shift 1.2652587890625/2048 em); damaged: []
+PASS segoeuil.ttf: layout tags sorted []
+PASS segoeuil.ttf: name table identical to Segoe (except version)
+PASS segoeuil.ttf: OS/2.usWeightClass = 300
+PASS segoeuil.ttf: OS/2.fsSelection = 0
+PASS segoeuil.ttf: OS/2.usWinAscent = 2210
+PASS segoeuil.ttf: OS/2.usWinDescent = 514
+PASS segoeuil.ttf: OS/2.sTypoAscender = 1491
+PASS segoeuil.ttf: OS/2.sTypoDescender = -431
+PASS segoeuil.ttf: OS/2.sTypoLineGap = 269
+PASS segoeuil.ttf: hhea.ascent
+PASS segoeuil.ttf: hhea.descent
+PASS segoeuil.ttf: hhea.lineGap
+PASS segoeuil.ttf: macStyle
+PASS segoeuil.ttf: 1579 chars moved to fallback fonts, 0 with no fallback []
+PASS segoeuil.ttf: everyday Latin + Arabic all drawn by the Apple font (588/588; missing [])
+PASS segoeuil.ttf: classic (GDI) apps: 0 chars with no linked/fallback font
+INFO segoeuil.ttf: chars handed to fallback by script: {'Latin': 528, 'Greek': 287, 'Cyrillic': 197, 'Common': 124, 'Georgian': 80, 'Inherited': 76, 'Lisu': 48, 'Arabic': 34}
+PASS segoeuil.ttf: English sample shapes with no missing glyphs (0)
+PASS segoeuil.ttf: Arabic sample shapes with no missing glyphs (0)
+PASS segoeuil.ttf: Arabic letters join (contextual forms used: 66)
+PASS segoeuil.ttf: Hebrew sample shapes with no missing glyphs (0)
+PASS segoeuil.ttf: Greek/Cyrillic sample shapes with no missing glyphs (0)
+PASS segoeuisl.ttf: OpenType Sanitizer 
+PASS segoeuisl.ttf: all tables decompile
+PASS segoeuisl.ttf: 37443 glyph outlines identical to Apple's (largest point shift 1.37591552734375/2048 em); damaged: []
+PASS segoeuisl.ttf: layout tags sorted []
+PASS segoeuisl.ttf: name table identical to Segoe (except version)
+PASS segoeuisl.ttf: OS/2.usWeightClass = 350
+PASS segoeuisl.ttf: OS/2.fsSelection = 256
+PASS segoeuisl.ttf: OS/2.usWinAscent = 2210
+PASS segoeuisl.ttf: OS/2.usWinDescent = 514
+PASS segoeuisl.ttf: OS/2.sTypoAscender = 1491
+PASS segoeuisl.ttf: OS/2.sTypoDescender = -431
+PASS segoeuisl.ttf: OS/2.sTypoLineGap = 269
+PASS segoeuisl.ttf: hhea.ascent
+PASS segoeuisl.ttf: hhea.descent
+PASS segoeuisl.ttf: hhea.lineGap
+PASS segoeuisl.ttf: macStyle
+PASS segoeuisl.ttf: 1578 chars moved to fallback fonts, 0 with no fallback []
+PASS segoeuisl.ttf: everyday Latin + Arabic all drawn by the Apple font (588/588; missing [])
+PASS segoeuisl.ttf: classic (GDI) apps: 0 chars with no linked/fallback font
+INFO segoeuisl.ttf: chars handed to fallback by script: {'Latin': 528, 'Greek': 287, 'Cyrillic': 197, 'Common': 123, 'Georgian': 80, 'Inherited': 76, 'Lisu': 48, 'Arabic': 34}
+PASS segoeuisl.ttf: English sample shapes with no missing glyphs (0)
+PASS segoeuisl.ttf: Arabic sample shapes with no missing glyphs (0)
+PASS segoeuisl.ttf: Arabic letters join (contextual forms used: 66)
+PASS segoeuisl.ttf: Hebrew sample shapes with no missing glyphs (0)
+PASS segoeuisl.ttf: Greek/Cyrillic sample shapes with no missing glyphs (0)
+PASS segoeui.ttf: OpenType Sanitizer 
+PASS segoeui.ttf: all tables decompile
+PASS segoeui.ttf: 37443 glyph outlines identical to Apple's (largest point shift 0/2048 em); damaged: []
+PASS segoeui.ttf: layout tags sorted []
+PASS segoeui.ttf: name table identical to Segoe (except version)
+PASS segoeui.ttf: OS/2.usWeightClass = 400
+PASS segoeui.ttf: OS/2.fsSelection = 64
+PASS segoeui.ttf: OS/2.usWinAscent = 2210
+PASS segoeui.ttf: OS/2.usWinDescent = 514
+PASS segoeui.ttf: OS/2.sTypoAscender = 1491
+PASS segoeui.ttf: OS/2.sTypoDescender = -431
+PASS segoeui.ttf: OS/2.sTypoLineGap = 269
+PASS segoeui.ttf: hhea.ascent
+PASS segoeui.ttf: hhea.descent
+PASS segoeui.ttf: hhea.lineGap
+PASS segoeui.ttf: macStyle
+PASS segoeui.ttf: 1580 chars moved to fallback fonts, 0 with no fallback []
+PASS segoeui.ttf: everyday Latin + Arabic all drawn by the Apple font (588/588; missing [])
+PASS segoeui.ttf: classic (GDI) apps: 0 chars with no linked/fallback font
+INFO segoeui.ttf: chars handed to fallback by script: {'Latin': 528, 'Greek': 287, 'Cyrillic': 197, 'Common': 124, 'Georgian': 80, 'Inherited': 77, 'Lisu': 48, 'Arabic': 34}
+PASS segoeui.ttf: English sample shapes with no missing glyphs (0)
+PASS segoeui.ttf: Arabic sample shapes with no missing glyphs (0)
+PASS segoeui.ttf: Arabic letters join (contextual forms used: 66)
+PASS segoeui.ttf: Hebrew sample shapes with no missing glyphs (0)
+PASS segoeui.ttf: Greek/Cyrillic sample shapes with no missing glyphs (0)
+PASS seguisb.ttf: OpenType Sanitizer 
+PASS seguisb.ttf: all tables decompile
+PASS seguisb.ttf: 37443 glyph outlines identical to Apple's (largest point shift 1.00689697265625/2048 em); damaged: []
+PASS seguisb.ttf: layout tags sorted []
+PASS seguisb.ttf: name table identical to Segoe (except version)
+PASS seguisb.ttf: OS/2.usWeightClass = 600
+PASS seguisb.ttf: OS/2.fsSelection = 0
+PASS seguisb.ttf: OS/2.usWinAscent = 2210
+PASS seguisb.ttf: OS/2.usWinDescent = 514
+PASS seguisb.ttf: OS/2.sTypoAscender = 1491
+PASS seguisb.ttf: OS/2.sTypoDescender = -431
+PASS seguisb.ttf: OS/2.sTypoLineGap = 269
+PASS seguisb.ttf: hhea.ascent
+PASS seguisb.ttf: hhea.descent
+PASS seguisb.ttf: hhea.lineGap
+PASS seguisb.ttf: macStyle
+PASS seguisb.ttf: 1578 chars moved to fallback fonts, 0 with no fallback []
+PASS seguisb.ttf: everyday Latin + Arabic all drawn by the Apple font (588/588; missing [])
+PASS seguisb.ttf: classic (GDI) apps: 0 chars with no linked/fallback font
+INFO seguisb.ttf: chars handed to fallback by script: {'Latin': 528, 'Greek': 287, 'Cyrillic': 197, 'Common': 123, 'Georgian': 80, 'Inherited': 76, 'Lisu': 48, 'Arabic': 34}
+PASS seguisb.ttf: English sample shapes with no missing glyphs (0)
+PASS seguisb.ttf: Arabic sample shapes with no missing glyphs (0)
+PASS seguisb.ttf: Arabic letters join (contextual forms used: 66)
+PASS seguisb.ttf: Hebrew sample shapes with no missing glyphs (0)
+PASS seguisb.ttf: Greek/Cyrillic sample shapes with no missing glyphs (0)
+PASS segoeuib.ttf: OpenType Sanitizer 
+PASS segoeuib.ttf: all tables decompile
+PASS segoeuib.ttf: 37443 glyph outlines identical to Apple's (largest point shift 1.5/2048 em); damaged: []
+PASS segoeuib.ttf: layout tags sorted []
+PASS segoeuib.ttf: name table identical to Segoe (except version)
+PASS segoeuib.ttf: OS/2.usWeightClass = 700
+PASS segoeuib.ttf: OS/2.fsSelection = 32
+PASS segoeuib.ttf: OS/2.usWinAscent = 2210
+PASS segoeuib.ttf: OS/2.usWinDescent = 514
+PASS segoeuib.ttf: OS/2.sTypoAscender = 1491
+PASS segoeuib.ttf: OS/2.sTypoDescender = -431
+PASS segoeuib.ttf: OS/2.sTypoLineGap = 269
+PASS segoeuib.ttf: hhea.ascent
+PASS segoeuib.ttf: hhea.descent
+PASS segoeuib.ttf: hhea.lineGap
+PASS segoeuib.ttf: macStyle
+PASS segoeuib.ttf: 1579 chars moved to fallback fonts, 0 with no fallback []
+PASS segoeuib.ttf: everyday Latin + Arabic all drawn by the Apple font (588/588; missing [])
+PASS segoeuib.ttf: classic (GDI) apps: 0 chars with no linked/fallback font
+INFO segoeuib.ttf: chars handed to fallback by script: {'Latin': 528, 'Greek': 287, 'Cyrillic': 197, 'Common': 124, 'Georgian': 80, 'Inherited': 76, 'Lisu': 48, 'Arabic': 34}
+PASS segoeuib.ttf: English sample shapes with no missing glyphs (0)
+PASS segoeuib.ttf: Arabic sample shapes with no missing glyphs (0)
+PASS segoeuib.ttf: Arabic letters join (contextual forms used: 66)
+PASS segoeuib.ttf: Hebrew sample shapes with no missing glyphs (0)
+PASS segoeuib.ttf: Greek/Cyrillic sample shapes with no missing glyphs (0)
+PASS seguibl.ttf: OpenType Sanitizer 
+PASS seguibl.ttf: all tables decompile
+PASS seguibl.ttf: 37443 glyph outlines identical to Apple's (largest point shift 1.330078125/2048 em); damaged: []
+PASS seguibl.ttf: layout tags sorted []
+PASS seguibl.ttf: name table identical to Segoe (except version)
+PASS seguibl.ttf: OS/2.usWeightClass = 900
+PASS seguibl.ttf: OS/2.fsSelection = 64
+PASS seguibl.ttf: OS/2.usWinAscent = 2210
+PASS seguibl.ttf: OS/2.usWinDescent = 514
+PASS seguibl.ttf: OS/2.sTypoAscender = 1491
+PASS seguibl.ttf: OS/2.sTypoDescender = -431
+PASS seguibl.ttf: OS/2.sTypoLineGap = 269
+PASS seguibl.ttf: hhea.ascent
+PASS seguibl.ttf: hhea.descent
+PASS seguibl.ttf: hhea.lineGap
+PASS seguibl.ttf: macStyle
+PASS seguibl.ttf: 810 chars moved to fallback fonts, 0 with no fallback []
+PASS seguibl.ttf: everyday Latin + Arabic all drawn by the Apple font (337/337; missing [])
+PASS seguibl.ttf: classic (GDI) apps: 0 chars with no linked/fallback font
+INFO seguibl.ttf: chars handed to fallback by script: {'Greek': 278, 'Latin': 257, 'Common': 84, 'Inherited': 76, 'Cyrillic': 51, 'Lisu': 48, 'Coptic': 14, 'Bopomofo': 2}
+PASS seguibl.ttf: English sample shapes with no missing glyphs (0)
+PASS seguibl.ttf: Arabic sample shapes with no missing glyphs (0)
+PASS seguibl.ttf: Arabic letters join (contextual forms used: 66)
+PASS seguibl.ttf: Hebrew sample shapes with no missing glyphs (0)
+PASS seguibl.ttf: Greek/Cyrillic sample shapes with no missing glyphs (0)
+PASS seguili.ttf: OpenType Sanitizer 
+PASS seguili.ttf: all tables decompile
+PASS seguili.ttf: 36619 glyph outlines identical to Apple's (largest point shift 1.2335205078125/2048 em); damaged: []
+PASS seguili.ttf: layout tags sorted []
+PASS seguili.ttf: name table identical to Segoe (except version)
+PASS seguili.ttf: OS/2.usWeightClass = 300
+PASS seguili.ttf: OS/2.fsSelection = 1
+PASS seguili.ttf: OS/2.usWinAscent = 2210
+PASS seguili.ttf: OS/2.usWinDescent = 514
+PASS seguili.ttf: OS/2.sTypoAscender = 1491
+PASS seguili.ttf: OS/2.sTypoDescender = -431
+PASS seguili.ttf: OS/2.sTypoLineGap = 269
+PASS seguili.ttf: hhea.ascent
+PASS seguili.ttf: hhea.descent
+PASS seguili.ttf: hhea.lineGap
+PASS seguili.ttf: macStyle
+PASS seguili.ttf: 1545 chars moved to fallback fonts, 0 with no fallback []
+PASS seguili.ttf: everyday Latin + Arabic all drawn by the Apple font (340/340; missing [])
+PASS seguili.ttf: classic (GDI) apps: 0 chars with no linked/fallback font
+INFO seguili.ttf: chars handed to fallback by script: {'Latin': 689, 'Greek': 297, 'Cyrillic': 200, 'Common': 108, 'Inherited': 105, 'Georgian': 80, 'Lisu': 48, 'Coptic': 14}
+PASS seguili.ttf: English sample shapes with no missing glyphs (0)
+PASS seguili.ttf: Arabic sample shapes with no missing glyphs (0)
+PASS seguili.ttf: Arabic letters join (contextual forms used: 66)
+PASS seguili.ttf: Hebrew sample shapes with no missing glyphs (0)
+PASS seguili.ttf: Greek/Cyrillic sample shapes with no missing glyphs (0)
+PASS seguisli.ttf: OpenType Sanitizer 
+PASS seguisli.ttf: all tables decompile
+PASS seguisli.ttf: 36619 glyph outlines identical to Apple's (largest point shift 1.37591552734375/2048 em); damaged: []
+PASS seguisli.ttf: layout tags sorted []
+PASS seguisli.ttf: name table identical to Segoe (except version)
+PASS seguisli.ttf: OS/2.usWeightClass = 350
+PASS seguisli.ttf: OS/2.fsSelection = 257
+PASS seguisli.ttf: OS/2.usWinAscent = 2210
+PASS seguisli.ttf: OS/2.usWinDescent = 514
+PASS seguisli.ttf: OS/2.sTypoAscender = 1491
+PASS seguisli.ttf: OS/2.sTypoDescender = -431
+PASS seguisli.ttf: OS/2.sTypoLineGap = 269
+PASS seguisli.ttf: hhea.ascent
+PASS seguisli.ttf: hhea.descent
+PASS seguisli.ttf: hhea.lineGap
+PASS seguisli.ttf: macStyle
+PASS seguisli.ttf: 1545 chars moved to fallback fonts, 0 with no fallback []
+PASS seguisli.ttf: everyday Latin + Arabic all drawn by the Apple font (340/340; missing [])
+PASS seguisli.ttf: classic (GDI) apps: 0 chars with no linked/fallback font
+INFO seguisli.ttf: chars handed to fallback by script: {'Latin': 689, 'Greek': 297, 'Cyrillic': 200, 'Common': 108, 'Inherited': 105, 'Georgian': 80, 'Lisu': 48, 'Coptic': 14}
+PASS seguisli.ttf: English sample shapes with no missing glyphs (0)
+PASS seguisli.ttf: Arabic sample shapes with no missing glyphs (0)
+PASS seguisli.ttf: Arabic letters join (contextual forms used: 66)
+PASS seguisli.ttf: Hebrew sample shapes with no missing glyphs (0)
+PASS seguisli.ttf: Greek/Cyrillic sample shapes with no missing glyphs (0)
+PASS segoeuii.ttf: OpenType Sanitizer 
+PASS segoeuii.ttf: all tables decompile
+PASS segoeuii.ttf: 36619 glyph outlines identical to Apple's (largest point shift 0/2048 em); damaged: []
+PASS segoeuii.ttf: layout tags sorted []
+PASS segoeuii.ttf: name table identical to Segoe (except version)
+PASS segoeuii.ttf: OS/2.usWeightClass = 400
+PASS segoeuii.ttf: OS/2.fsSelection = 1
+PASS segoeuii.ttf: OS/2.usWinAscent = 2210
+PASS segoeuii.ttf: OS/2.usWinDescent = 514
+PASS segoeuii.ttf: OS/2.sTypoAscender = 1491
+PASS segoeuii.ttf: OS/2.sTypoDescender = -431
+PASS segoeuii.ttf: OS/2.sTypoLineGap = 269
+PASS segoeuii.ttf: hhea.ascent
+PASS segoeuii.ttf: hhea.descent
+PASS segoeuii.ttf: hhea.lineGap
+PASS segoeuii.ttf: macStyle
+PASS segoeuii.ttf: 1545 chars moved to fallback fonts, 0 with no fallback []
+PASS segoeuii.ttf: everyday Latin + Arabic all drawn by the Apple font (340/340; missing [])
+PASS segoeuii.ttf: classic (GDI) apps: 0 chars with no linked/fallback font
+INFO segoeuii.ttf: chars handed to fallback by script: {'Latin': 689, 'Greek': 297, 'Cyrillic': 200, 'Common': 108, 'Inherited': 105, 'Georgian': 80, 'Lisu': 48, 'Coptic': 14}
+PASS segoeuii.ttf: English sample shapes with no missing glyphs (0)
+PASS segoeuii.ttf: Arabic sample shapes with no missing glyphs (0)
+PASS segoeuii.ttf: Arabic letters join (contextual forms used: 66)
+PASS segoeuii.ttf: Hebrew sample shapes with no missing glyphs (0)
+PASS segoeuii.ttf: Greek/Cyrillic sample shapes with no missing glyphs (0)
+PASS seguisbi.ttf: OpenType Sanitizer 
+PASS seguisbi.ttf: all tables decompile
+PASS seguisbi.ttf: 36619 glyph outlines identical to Apple's (largest point shift 1.00421142578125/2048 em); damaged: []
+PASS seguisbi.ttf: layout tags sorted []
+PASS seguisbi.ttf: name table identical to Segoe (except version)
+PASS seguisbi.ttf: OS/2.usWeightClass = 600
+PASS seguisbi.ttf: OS/2.fsSelection = 1
+PASS seguisbi.ttf: OS/2.usWinAscent = 2210
+PASS seguisbi.ttf: OS/2.usWinDescent = 514
+PASS seguisbi.ttf: OS/2.sTypoAscender = 1491
+PASS seguisbi.ttf: OS/2.sTypoDescender = -431
+PASS seguisbi.ttf: OS/2.sTypoLineGap = 269
+PASS seguisbi.ttf: hhea.ascent
+PASS seguisbi.ttf: hhea.descent
+PASS seguisbi.ttf: hhea.lineGap
+PASS seguisbi.ttf: macStyle
+PASS seguisbi.ttf: 1545 chars moved to fallback fonts, 0 with no fallback []
+PASS seguisbi.ttf: everyday Latin + Arabic all drawn by the Apple font (340/340; missing [])
+PASS seguisbi.ttf: classic (GDI) apps: 0 chars with no linked/fallback font
+INFO seguisbi.ttf: chars handed to fallback by script: {'Latin': 689, 'Greek': 297, 'Cyrillic': 200, 'Common': 108, 'Inherited': 105, 'Georgian': 80, 'Lisu': 48, 'Coptic': 14}
+PASS seguisbi.ttf: English sample shapes with no missing glyphs (0)
+PASS seguisbi.ttf: Arabic sample shapes with no missing glyphs (0)
+PASS seguisbi.ttf: Arabic letters join (contextual forms used: 66)
+PASS seguisbi.ttf: Hebrew sample shapes with no missing glyphs (0)
+PASS seguisbi.ttf: Greek/Cyrillic sample shapes with no missing glyphs (0)
+PASS segoeuiz.ttf: OpenType Sanitizer 
+PASS segoeuiz.ttf: all tables decompile
+PASS segoeuiz.ttf: 36619 glyph outlines identical to Apple's (largest point shift 1.5/2048 em); damaged: []
+PASS segoeuiz.ttf: layout tags sorted []
+PASS segoeuiz.ttf: name table identical to Segoe (except version)
+PASS segoeuiz.ttf: OS/2.usWeightClass = 700
+PASS segoeuiz.ttf: OS/2.fsSelection = 33
+PASS segoeuiz.ttf: OS/2.usWinAscent = 2210
+PASS segoeuiz.ttf: OS/2.usWinDescent = 514
+PASS segoeuiz.ttf: OS/2.sTypoAscender = 1491
+PASS segoeuiz.ttf: OS/2.sTypoDescender = -431
+PASS segoeuiz.ttf: OS/2.sTypoLineGap = 269
+PASS segoeuiz.ttf: hhea.ascent
+PASS segoeuiz.ttf: hhea.descent
+PASS segoeuiz.ttf: hhea.lineGap
+PASS segoeuiz.ttf: macStyle
+PASS segoeuiz.ttf: 1545 chars moved to fallback fonts, 0 with no fallback []
+PASS segoeuiz.ttf: everyday Latin + Arabic all drawn by the Apple font (340/340; missing [])
+PASS segoeuiz.ttf: classic (GDI) apps: 0 chars with no linked/fallback font
+INFO segoeuiz.ttf: chars handed to fallback by script: {'Latin': 689, 'Greek': 297, 'Cyrillic': 200, 'Common': 108, 'Inherited': 105, 'Georgian': 80, 'Lisu': 48, 'Coptic': 14}
+PASS segoeuiz.ttf: English sample shapes with no missing glyphs (0)
+PASS segoeuiz.ttf: Arabic sample shapes with no missing glyphs (0)
+PASS segoeuiz.ttf: Arabic letters join (contextual forms used: 66)
+PASS segoeuiz.ttf: Hebrew sample shapes with no missing glyphs (0)
+PASS segoeuiz.ttf: Greek/Cyrillic sample shapes with no missing glyphs (0)
+PASS seguibli.ttf: OpenType Sanitizer 
+PASS seguibli.ttf: all tables decompile
+PASS seguibli.ttf: 36619 glyph outlines identical to Apple's (largest point shift 1.3275146484375/2048 em); damaged: []
+PASS seguibli.ttf: layout tags sorted []
+PASS seguibli.ttf: name table identical to Segoe (except version)
+PASS seguibli.ttf: OS/2.usWeightClass = 900
+PASS seguibli.ttf: OS/2.fsSelection = 1
+PASS seguibli.ttf: OS/2.usWinAscent = 2210
+PASS seguibli.ttf: OS/2.usWinDescent = 514
+PASS seguibli.ttf: OS/2.sTypoAscender = 1516
+PASS seguibli.ttf: OS/2.sTypoDescender = -471
+PASS seguibli.ttf: OS/2.sTypoLineGap = 107
+PASS seguibli.ttf: hhea.ascent
+PASS seguibli.ttf: hhea.descent
+PASS seguibli.ttf: hhea.lineGap
+PASS seguibli.ttf: macStyle
+PASS seguibli.ttf: 1021 chars moved to fallback fonts, 0 with no fallback []
+PASS seguibli.ttf: everyday Latin + Arabic all drawn by the Apple font (337/337; missing [])
+PASS seguibli.ttf: classic (GDI) apps: 0 chars with no linked/fallback font
+INFO seguibli.ttf: chars handed to fallback by script: {'Latin': 414, 'Greek': 288, 'Inherited': 105, 'Common': 96, 'Cyrillic': 54, 'Lisu': 48, 'Coptic': 14, 'Bopomofo': 2}
+PASS seguibli.ttf: English sample shapes with no missing glyphs (0)
+PASS seguibli.ttf: Arabic sample shapes with no missing glyphs (0)
+PASS seguibli.ttf: Arabic letters join (contextual forms used: 66)
+PASS seguibli.ttf: Hebrew sample shapes with no missing glyphs (0)
+PASS seguibli.ttf: Greek/Cyrillic sample shapes with no missing glyphs (0)
+PASS SegUIVar.ttf: OpenType Sanitizer 
+PASS SegUIVar.ttf: all tables decompile
+PASS SegUIVar.ttf: 35707 glyph outlines identical to Apple's (largest point shift 0/2048 em); damaged: []
+PASS SegUIVar.ttf: layout tags sorted []
+PASS SegUIVar.ttf: name table identical to Segoe (except version)
+PASS SegUIVar.ttf: OS/2.usWeightClass = 400
+PASS SegUIVar.ttf: OS/2.fsSelection = 64
+PASS SegUIVar.ttf: OS/2.usWinAscent = 2210
+PASS SegUIVar.ttf: OS/2.usWinDescent = 514
+PASS SegUIVar.ttf: OS/2.sTypoAscender = 1491
+PASS SegUIVar.ttf: OS/2.sTypoDescender = -431
+PASS SegUIVar.ttf: OS/2.sTypoLineGap = 269
+PASS SegUIVar.ttf: hhea.ascent
+PASS SegUIVar.ttf: hhea.descent
+PASS SegUIVar.ttf: hhea.lineGap
+PASS SegUIVar.ttf: macStyle
+PASS SegUIVar.ttf: variation axes [('opsz', 5.0, 10.5, 36.0), ('wght', 300.0, 400.0, 700.0)]
+PASS SegUIVar.ttf: all 15 named instances match
+PASS SegUIVar.ttf: 1024 chars moved to fallback fonts, 0 with no fallback []
+PASS SegUIVar.ttf: everyday Latin + Arabic all drawn by the Apple font (340/340; missing [])
+PASS SegUIVar.ttf: classic (GDI) apps: 0 chars with no linked/fallback font
+INFO SegUIVar.ttf: chars handed to fallback by script: {'Latin': 479, 'Greek': 279, 'Common': 139, 'Inherited': 74, 'Cyrillic': 34, 'Coptic': 14, 'Hebrew': 3, 'Bopomofo': 2}
+PASS SegUIVar.ttf: English sample shapes with no missing glyphs (0)
+PASS SegUIVar.ttf: Greek/Cyrillic sample shapes with no missing glyphs (0)
+
+Text width vs Segoe (1.00 = same):
+  segoeuil.ttf   English  1.12
+  segoeuil.ttf   Arabic   1.04
+  segoeuisl.ttf  English  1.10
+  segoeuisl.ttf  Arabic   1.00
+  segoeui.ttf    English  1.07
+  segoeui.ttf    Arabic   0.98
+  seguisb.ttf    English  1.09
+  seguisb.ttf    Arabic   1.02
+  segoeuib.ttf   English  1.06
+  segoeuib.ttf   Arabic   1.04
+  seguibl.ttf    English  1.06
+  seguibl.ttf    Arabic   0.76
+  seguili.ttf    English  1.15
+  seguili.ttf    Arabic   0.67
+  seguisli.ttf   English  1.13
+  seguisli.ttf   Arabic   0.68
+  segoeuii.ttf   English  1.10
+  segoeuii.ttf   Arabic   0.68
+  seguisbi.ttf   English  1.12
+  seguisbi.ttf   Arabic   0.72
+  segoeuiz.ttf   English  1.08
+  segoeuiz.ttf   Arabic   0.73
+  seguibli.ttf   English  1.08
+  seguibli.ttf   Arabic   0.97
+  SegUIVar.ttf   English  1.08
+
+ALL HARD CHECKS PASSED
+

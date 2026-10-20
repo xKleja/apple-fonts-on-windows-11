@@ -1,0 +1,56 @@
+name: Bug report
+description: Something did not work as expected when installing, checking, or uninstalling.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please fill in every field; it saves a round trip.
+
+        **Privacy:** before pasting any output, remove usernames, computer names, and personal paths (for example, replace `C:\Users\<name>\...` with `C:\Users\USER\...`).
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version and build
+      description: Run `winver`, or `[Environment]::OSVersion.Version` in PowerShell.
+      placeholder: "Windows 11 24H2, build 26100.xxxx"
+    validations:
+      required: true
+  - type: input
+    id: powershell
+    attributes:
+      label: PowerShell version
+      description: Run `$PSVersionTable.PSVersion` and say whether you used Windows PowerShell or PowerShell 7.
+      placeholder: "5.1.26100.xxxx (Windows PowerShell)"
+    validations:
+      required: true
+  - type: input
+    id: release
+    attributes:
+      label: Release version installed
+      description: The release tag you downloaded, for example `v1.0.0`.
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you run, what did you expect, and what happened instead? Include screenshots if they help (with personal details removed).
+    validations:
+      required: true
+  - type: textarea
+    id: status-output
+    attributes:
+      label: Output of `.\status.ps1`
+      description: Run `.\status.ps1` from the repository folder and paste the full output. Remove usernames and personal paths first.
+      render: text
+    validations:
+      required: true
+  - type: checkboxes
+    id: disclaimer
+    attributes:
+      label: Disclaimer
+      options:
+        - label: I have read the licensing disclaimer at the top of the README.
+          required: true
