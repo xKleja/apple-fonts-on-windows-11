@@ -202,3 +202,10 @@ Full detail: [docs/how-it-works.md](docs/how-it-works.md). Pitfalls: [docs/lesso
 
 When a new macOS brings new emoji or SF versions: [docs/rebuild.md](docs/rebuild.md)
 (Mac: fetch + build, Windows: validate, then publish a new release).
+
+## License
+
+The code and documentation in this repository are released under the [MIT License](LICENSE).
+
+The MIT license does **not** cover any Apple or Microsoft fonts. Those remain under their owners'
+licenses, as described in the disclaimer at the top of this page.

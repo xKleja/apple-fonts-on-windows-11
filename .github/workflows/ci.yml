@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  powershell:
+    name: PowerShell parse (5.1 and 7)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse all .ps1 files (Windows PowerShell 5.1)
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Write-Host "PowerShell $($PSVersionTable.PSVersion)"
+          $failed = $false
+          $files = Get-ChildItem -Recurse -Filter *.ps1 -File | Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' }
+          foreach ($f in $files) {
+            $errs = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$null, [ref]$errs)
+            if ($errs) {
+              $failed = $true
+              foreach ($e in $errs) { Write-Host "ERROR $($f.FullName):$($e.Extent.StartLineNumber): $($e.Message)" }
+            } else {
+              Write-Host "OK    $($f.FullName)"
+            }
+          }
+          if ($failed) { exit 1 }
+
+      - name: Parse all .ps1 files (PowerShell 7)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Write-Host "PowerShell $($PSVersionTable.PSVersion)"
+          $failed = $false
+          $files = Get-ChildItem -Recurse -Filter *.ps1 -File | Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' }
+          foreach ($f in $files) {
+            $errs = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$null, [ref]$errs)
+            if ($errs) {
+              $failed = $true
+              foreach ($e in $errs) { Write-Host "ERROR $($f.FullName):$($e.Extent.StartLineNumber): $($e.Message)" }
+            } else {
+              Write-Host "OK    $($f.FullName)"
+            }
+          }
+          if ($failed) { exit 1 }
+
+      - name: Non-ASCII .ps1 files must have a UTF-8 BOM
+        shell: pwsh
+        run: |
+          $failed = $false
+          $files = Get-ChildItem -Recurse -Filter *.ps1 -File | Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' }
+          foreach ($f in $files) {
+            $bytes = [System.IO.File]::ReadAllBytes($f.FullName)
+            $hasBom = ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF)
+            $nonAscii = $false
+            foreach ($b in $bytes) { if ($b -gt 127) { $nonAscii = $true; break } }
+            if ($nonAscii -and -not $hasBom) {
+              $failed = $true
+              Write-Host "ERROR $($f.FullName): contains non-ASCII bytes but has no UTF-8 BOM"
+            }
+          }
+          if ($failed) { exit 1 }
+
+  python:
+    name: Python compile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile Python tools
+        run: python -m compileall -q build validation
+
+  shell:
+    name: Shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: bash -n
+        run: |
+          for f in build/*.sh; do
+            echo "bash -n $f"
+            bash -n "$f"
+          done
+      - name: shellcheck (errors only)
+        run: shellcheck --severity=error build/*.sh
+
+  hygiene:
+    name: Repo hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No font binaries tracked
+        run: |
+          found=$(git ls-files -- '*.ttf' '*.otf' '*.ttc' '*.ttx')
+          if [ -n "$found" ]; then
+            echo "Font files must never be committed:"
+            echo "$found"
+            exit 1
+          fi
