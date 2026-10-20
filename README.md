@@ -51,20 +51,21 @@ Aptos, Times…), and the console / code fonts.
 
 - Windows 11 (built and verified on 25H2, build 26200)
 - An administrator account (you will click **Yes** on one UAC prompt)
-- [GitHub CLI](https://cli.github.com/) signed in to the account that owns this repo, to download the fonts:
-  ```powershell
-  winget install GitHub.cli
-  gh auth login
-  ```
-- About 1.2 GB of free space (0.9 GB of downloads, which are deleted after unpacking)
+- An internet connection for the first run. The fonts are downloaded from the release over HTTPS;
+  no GitHub account, sign-in or GitHub CLI is needed.
+- Free space: about 2 GB on the drive holding this folder (0.7 GB download, deleted after unpacking,
+  plus 1 GB of unpacked fonts) and about 1 GB on the Windows drive for the installed fonts
 
 ## Install
 
 ```powershell
-gh repo clone xKleja/apple-fonts-on-windows-11
+git clone https://github.com/xKleja/apple-fonts-on-windows-11.git
 cd apple-fonts-on-windows-11
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
+
+No Git? Download the repository as a ZIP from the green **Code** button, unpack it, and run the last
+line from inside the unpacked folder.
 
 What happens:
 
@@ -86,7 +87,7 @@ Options:
 | `.\install.ps1 -Tag v1.0.0` | Install a specific release instead of the latest |
 | `.\install.ps1 -NoRestartPrompt` | Do not ask about restarting |
 
-Offline / another PC without `gh`: download `fonts-sf.zip`, `fonts-ui.zip`, `fonts-emoji.zip` from the
+Offline install: download `fonts-sf.zip`, `fonts-ui.zip`, `fonts-emoji.zip` from the
 release page, unzip all three into `fonts\` (giving `fonts\SF\`, `fonts\ui\`, `fonts\emoji\`), then run `.\install.ps1`.
 It sees the fonts are present and skips the download.
 
@@ -132,7 +133,8 @@ after updates. If anything shows `[DIFF]`:
 |---|---|
 | UI still looks like Segoe right after installing | Restart Windows (not just sign out). Then run `.\status.ps1`. |
 | Emoji are still Windows emoji | Same: restart. `status.ps1` should show `Segoe UI Emoji -> SFUI-SEGUIEMJ.TTF`. |
-| `gh: not found` or a download error | `winget install GitHub.cli`, `gh auth login`, then run `install.ps1` again. |
+| `Download of ... failed` | Check the internet connection (and any proxy), then run `install.ps1` again. Or use the offline install above. |
+| `Administrator rights were declined` | Run it again and click **Yes** on the UAC prompt. |
 | `Checksum mismatch` | A font file changed or a download got corrupted. Delete `fonts\SF`, `fonts\emoji` and the `*.ttf` in `fonts\ui`, then run `install.ps1` again. |
 | `Already installed (found ...state.json)` | It is installed. Use `uninstall.ps1` first, or `install.ps1 -Resume` if the last run was interrupted. |
 | Install stopped half-way | `.\install.ps1 -Resume` finishes it, or `.\uninstall.ps1` undoes whatever was done. Progress is saved after every step. |
