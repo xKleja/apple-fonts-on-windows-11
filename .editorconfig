@@ -9,7 +9,7 @@ indent_style = space
 indent_size = 4
 
 # Mirrors .gitattributes: PowerShell 5.1 and Windows tools expect CRLF.
-[*.{ps1,wsb}]
+[*.{ps1,wsb,cmd}]
 end_of_line = crlf
 
 [*.py]
