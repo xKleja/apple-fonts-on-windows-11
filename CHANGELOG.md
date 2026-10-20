@@ -7,6 +7,8 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-21
+
 The fonts are unchanged (same release assets as v1.0.0); these changes affect the scripts, tools and docs.
 
 ### Added
@@ -58,5 +60,6 @@ The fonts are unchanged (same release assets as v1.0.0); these changes affect th
   registry repointing; Apple Color Emoji as "Segoe UI Emoji"; 155 SF / New York fonts.
 - Build (macOS), validation and Windows Sandbox rehearsal tooling; documentation.
 
-[Unreleased]: https://github.com/xKleja/apple-fonts-on-windows-11/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/xKleja/apple-fonts-on-windows-11/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/xKleja/apple-fonts-on-windows-11/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/xKleja/apple-fonts-on-windows-11/releases/tag/v1.0.0
