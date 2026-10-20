@@ -12,9 +12,11 @@ from fontTools.pens.areaPen import AreaPen
 from fontTools.ttLib import TTFont
 from fontTools.varLib import instancer
 
-AR = f"{sys.argv[2] if len(sys.argv) > 2 else 'fonts/SF'}/SF Multilingual Extensions/SF Arabic/SF-Arabic.ttf"
+if len(sys.argv) != 3:
+    sys.exit(__doc__)
+AR = f"{sys.argv[2]}/SF Multilingual Extensions/SF Arabic/SF-Arabic.ttf"
 TEXT = "الإعدادات مستكشف الملفات مرحبًا بالعالم"
-BUILD = sys.argv[1] if len(sys.argv) > 1 else "fonts/ui"
+BUILD = sys.argv[1]
 
 
 def run(path):

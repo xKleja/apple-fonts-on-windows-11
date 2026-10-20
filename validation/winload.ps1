@@ -1,7 +1,8 @@
 # Load each font with Windows' own parsers without installing it:
 #  - GDI: AddFontResourceEx(FR_PRIVATE), the same font driver used for installed fonts
 #  - WPF GlyphTypeface: Windows' managed OpenType loader (names, cmap, glyph outlines)
-param([string]$Root)
+param([Parameter(Mandatory)][string]$Root)
+$Root = (Resolve-Path -LiteralPath $Root).Path
 Add-Type -AssemblyName PresentationCore
 Add-Type @"
 using System; using System.Runtime.InteropServices;
@@ -32,3 +33,4 @@ foreach ($f in Get-ChildItem $Root -Recurse -File -Include *.ttf, *.otf) {
 }
 "Windows-loaded OK: $ok   failed: $($bad.Count)"
 $bad
+if ($bad) { exit 1 }

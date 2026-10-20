@@ -29,7 +29,11 @@ public static class GdiSheet {
 "@
 $jobs = Get-Content (Join-Path $RenderWork 'jobs.json') -Raw | ConvertFrom-Json
 foreach ($j in $jobs) { [void][GdiSheet]::AddFontResourceEx($j.file, 0x10, [IntPtr]::Zero) }
-function AppleFace($file) { ($jobs | Where-Object { $_.name -eq $file }).family }
+function AppleFace($file) {
+    $fam = ($jobs | Where-Object { $_.name -eq $file }).family
+    if (-not $fam) { throw "No render job for $file (run render_all_glyphs.py on the same folder first)" }
+    $fam
+}
 
 $T = [char]0x640   # tatweel, forces joining forms
 $letters = 'ا ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن ه و ي ء آ أ ؤ إ ئ ة ى' -split ' '

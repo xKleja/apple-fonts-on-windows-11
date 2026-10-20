@@ -22,7 +22,7 @@ public static class GdiInk {
     AddFontResourceEx(file, 0x10, IntPtr.Zero);
     IntPtr dc = CreateCompatibleDC(IntPtr.Zero);
     IntPtr hf = CreateFontW(-px,0,0,0,400,0,0,0,1,0,0,4,0,face);
-    SelectObject(dc, hf);
+    IntPtr oldFont = SelectObject(dc, hf);
     var sb = new System.Text.StringBuilder(64); GetTextFaceW(dc, 64, sb); gotFace = sb.ToString();
     var m = new MAT2 { m11 = 0x10000, m22 = 0x10000 };
     for (int g = 0; g < glyphs; g++) {
@@ -35,7 +35,7 @@ public static class GdiInk {
       }
       if (!ink) res.Add(g);
     }
-    DeleteObject(hf); DeleteDC(dc);
+    SelectObject(dc, oldFont); DeleteObject(hf); DeleteDC(dc);   // deselect first, or DeleteObject fails and leaks
     RemoveFontResourceEx(file, 0x10, IntPtr.Zero);
     return res;
   }
@@ -57,6 +57,7 @@ foreach ($j in $jobs) {
         if ($geo.IsEmpty() -or $geo.GetArea() -le 0) { $wpf.Add($g) }
     }
     $r['WPF outline'] = $wpf.ToArray()
+    if ($out.ContainsKey($j.family)) { throw "Duplicate test family $($j.family)" }
     $out[$j.family] = $r
     Write-Host "rendered $($j.name)"
 }

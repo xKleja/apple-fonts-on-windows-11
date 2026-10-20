@@ -12,17 +12,23 @@ Usage: render_all_glyphs.py <fonts dir> <work dir> [--reference <dir>] [file ...
 """
 import json
 import os
+import shutil
 import subprocess
 import sys
 
 from fontTools.pens.areaPen import AreaPen
 from fontTools.ttLib import TTFont
 
+POWERSHELL = shutil.which("pwsh") or shutil.which("powershell")
+if os.name != "nt" or not POWERSHELL or len(sys.argv) < 3:
+    sys.exit(__doc__ + "\nNeeds Windows (GDI/WPF) and PowerShell.")
 SRC, WORK = sys.argv[1:3]
 rest = sys.argv[3:]
 REF = None
 if "--reference" in rest:
     i = rest.index("--reference")
+    if i + 1 >= len(rest):
+        sys.exit("--reference needs a directory")
     REF = rest[i + 1]
     rest = rest[:i] + rest[i + 2:]
 FILES = rest or sorted(f for f in os.listdir(SRC) if f.lower().endswith(".ttf"))
@@ -34,12 +40,12 @@ for i, fn in enumerate(FILES):
     f = TTFont(os.path.join(SRC, fn))
     gs = f.getGlyphSet()
     order = f.getGlyphOrder()
-    ink = []
+    ink = set()
     for gid, name in enumerate(order):
         p = AreaPen(gs)
         gs[name].draw(p)
         if abs(p.value) > 0:
-            ink.append(gid)
+            ink.add(gid)
     if REF:
         ref = TTFont(os.path.join(REF, fn))
         rgs = ref.getGlyphSet()
@@ -48,13 +54,11 @@ for i, fn in enumerate(FILES):
                 p = AreaPen(rgs)
                 rgs[name].draw(p)
                 if abs(p.value) > 0:
-                    ink.append(gid)
+                    ink.add(gid)
     inked[fn] = (order, ink)
     family = f"ZZRenderTest{i}"
     for rec in f["name"].names:
-        if rec.nameID in (1, 4, 16):
-            rec.string = family
-        elif rec.nameID == 6:
+        if rec.nameID in (1, 4, 6, 16):
             rec.string = family
     out = os.path.join(WORK, f"{i}-{fn}")
     f.save(out)
@@ -62,9 +66,10 @@ for i, fn in enumerate(FILES):
 
 with open(os.path.join(WORK, "jobs.json"), "w") as fh:
     json.dump(jobs, fh)
-subprocess.run(["pwsh", "-NoProfile", "-File", os.path.join(HERE, "render_all_glyphs.ps1"),
+subprocess.run([POWERSHELL, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", os.path.join(HERE, "render_all_glyphs.ps1"),
                 os.path.join(WORK, "jobs.json"), os.path.join(WORK, "blank.json")], check=True)
-blank = json.load(open(os.path.join(WORK, "blank.json")))
+with open(os.path.join(WORK, "blank.json"), encoding="utf-8-sig") as fh:
+    blank = json.load(fh)
 
 total_fail = 0
 for job in jobs:
@@ -73,7 +78,7 @@ for job in jobs:
     res = blank[job["family"]]
     line = [f"{fn:15} {len(ink):6} inked glyphs"]
     for engine, empties in res.items():
-        bad = sorted(set(empties) & set(ink))
+        bad = sorted(set(empties) & ink)
         total_fail += len(bad)
         line.append(f"{engine}: {len(bad)} blank" + (f" {[order[g] for g in bad[:6]]}" if bad else ""))
     print(" | ".join(line))

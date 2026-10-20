@@ -1,23 +1,28 @@
-"""Validate the Apple-based Segoe UI / Segoe UI Variable replacements against the originals.
+r"""Validate the Apple-based Segoe UI / Segoe UI Variable replacements against the originals.
 
-Usage: validate_ui_fonts.py <built dir> <windows fonts dir> <Apple SF dir>
+Usage: validate_ui_fonts.py <built dir> <original Segoe dir> <Apple SF dir>
+  original Segoe dir: C:\Windows\Fonts, or a copy of the original Segoe files
+                      (the originals are never modified by the install, only repointed away from)
+Windows only: reads the installed fonts from the registry to check fallback coverage.
 Exit code 0 only if every hard check passes.
 """
 import collections
-import glob
 import os
 import subprocess
 import sys
-import winreg
 
-import uharfbuzz as hb
-from fontTools import unicodedata as ud
-from fontTools.ttLib import TTFont, TTCollection
+if os.name != "nt" or len(sys.argv) != 4:
+    sys.exit(__doc__)
 
-from fontTools.pens.areaPen import AreaPen
-from fontTools.varLib import instancer
+import winreg  # noqa: E402  (Windows only, checked above)
+
+import uharfbuzz as hb  # noqa: E402
+from fontTools import unicodedata as ud  # noqa: E402
+from fontTools.ttLib import TTCollection, TTFont  # noqa: E402
+from fontTools.varLib import instancer  # noqa: E402
 
 BUILT, WINFONTS, APPLE = sys.argv[1:4]
+SYSFONTS = os.path.join(os.environ["WINDIR"], "Fonts")   # where registry font file names resolve
 SF_PRO, SF_PRO_IT = f"{APPLE}/SF Pro/SF-Pro.ttf", f"{APPLE}/SF Pro/SF-Pro-Italic.ttf"
 EXT = f"{APPLE}/SF Multilingual Extensions"
 SCRIPTS = [f"{EXT}/SF Arabic/SF-Arabic.ttf", f"{EXT}/SF Hebrew/SF-Hebrew.ttf",
@@ -111,17 +116,21 @@ def installed_fonts():
             except OSError:
                 break
             i += 1
-            path = val if os.path.isabs(val) else os.path.join(WINFONTS, val)
+            path = val if os.path.isabs(val) else os.path.join(SYSFONTS, val)
             out[name] = path
     return out
 
 
-skip = {f.lower() for f in UI_FILES}
+# The fonts under test must not count as their own fallback: skip the Segoe originals and,
+# when the install is active, the SFUI-* builds the registry now points at.
+skip = {f.lower() for f in UI_FILES} | {"seguiemj.ttf"}
+skip |= {"sfui-" + f for f in skip}
 fallback_cov = set()
 gdi_link_cov = set()
 with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontLink\SystemLink") as k:
     link_files = {line.split(",")[0].lower() for line in winreg.QueryValueEx(k, "Segoe UI")[0]}
-for name, path in installed_fonts().items():
+unreadable = []
+for path in installed_fonts().values():
     base = os.path.basename(path).lower()
     if base in skip or not os.path.exists(path):
         continue
@@ -132,8 +141,10 @@ for name, path in installed_fonts().items():
             fallback_cov |= cm
             if base in link_files:
                 gdi_link_cov |= cm
-    except Exception:
-        pass
+    except Exception:  # noqa: BLE001  (a broken third-party font must not stop the run)
+        unreadable.append(path)
+if unreadable:
+    notes.append(f"INFO {len(unreadable)} installed font(s) unreadable, not counted as fallback: {unreadable[:5]}")
 
 # --- per-font checks ------------------------------------------------------------------
 width_report = []
@@ -142,10 +153,10 @@ for fn in UI_FILES:
     new, old = TTFont(new_p), TTFont(old_p)
 
     # 1. structure
-    r = subprocess.run([sys.executable, "-m", "ots", new_p, os.devnull], capture_output=True, text=True)
+    r = subprocess.run([sys.executable, "-m", "ots", new_p, os.devnull], capture_output=True, text=True, check=False)
     check(r.returncode == 0, f"{fn}: OpenType Sanitizer {r.stderr.strip()[:120]}")
     try:
-        for tag in new.keys():
+        for tag in new.keys():  # noqa: SIM118  (TTFont is not iterable over its tags)
             if tag != "GlyphOrder":
                 new[tag]
         check(True, f"{fn}: all tables decompile")
@@ -177,9 +188,11 @@ for fn in UI_FILES:
         check(getattr(new["hhea"], k) == getattr(old["hhea"], k), f"{fn}: hhea.{k}")
     check(new["head"].macStyle == old["head"].macStyle, f"{fn}: macStyle")
     if "fvar" in old:
-        ax = lambda t: [(a.axisTag, a.minValue, a.defaultValue, a.maxValue) for a in sorted(t["fvar"].axes, key=lambda a: a.axisTag)]
+        def ax(t):
+            return [(a.axisTag, a.minValue, a.defaultValue, a.maxValue) for a in sorted(t["fvar"].axes, key=lambda a: a.axisTag)]
         check(ax(new) == ax(old), f"{fn}: variation axes {ax(new)}")
-        inst = lambda t: sorted((tuple(sorted(i.coordinates.items())), i.subfamilyNameID) for i in t["fvar"].instances)
+        def inst(t):
+            return sorted((tuple(sorted(i.coordinates.items())), i.subfamilyNameID) for i in t["fvar"].instances)
         check(inst(new) == inst(old), f"{fn}: all {len(old['fvar'].instances)} named instances match")
 
     # 3. coverage: nothing Segoe could draw may become a square
@@ -211,7 +224,7 @@ for fn in UI_FILES:
         notdef = sum(1 for i in infos if i.codepoint == 0)
         check(notdef == 0, f"{fn}: {lang} sample shapes with no missing glyphs ({notdef})")
         if lang == "Arabic":
-            iso = {hb_gid for hb_gid in (shape(fnew, ch)[0][0].codepoint for ch in "مرحبالعم")}
+            iso = set(shape(fnew, ch)[0][0].codepoint for ch in "مرحبالعم")
             joined = sum(1 for i in infos if i.codepoint not in iso)
             check(joined > 10, f"{fn}: Arabic letters join (contextual forms used: {joined})")
         w_new = sum(p.x_advance for p in pos)
