@@ -11,6 +11,7 @@
 #  6. Emoji: Apple Color Emoji as SFUI-seguiemj.ttf; the "Segoe UI Emoji" registration points at it
 #  7. Adds the Settings > Apps > Installed apps entry
 #  8. Clears the font cache so the change applies cleanly on restart
+# The window shows these as steps 4-7 of install.ps1's seven (scripts\ui.ps1).
 #Requires -RunAsAdministrator
 param(
     [string]$FontsDir = (Join-Path $PSScriptRoot '..\fonts'),   # holds SF\, ui\, emoji\ and SHA256SUMS.txt
@@ -25,6 +26,7 @@ param(
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'backup-location.ps1')
 . (Join-Path $PSScriptRoot 'checks.ps1')
+. (Join-Path $PSScriptRoot 'ui.ps1')
 Assert-SupportedWindows
 
 $Fonts     = "$env:WINDIR\Fonts"
@@ -36,17 +38,18 @@ $defaultBackup = -not $BackupDir
 $BackupDir = if ($defaultBackup) { Get-DefaultBackupDir } else { Resolve-UserPath $BackupDir }
 $StatePath = Join-Path $BackupDir 'state.json'   # not "$State": PowerShell names are case-insensitive ($state = data)
 # Only administrators may change this folder: the elevated scripts trust state.json and the uninstaller in it.
-Protect-BackupDir $BackupDir -Custom:(-not $defaultBackup)
+$protectNotes = @(Protect-BackupDir $BackupDir -Custom:(-not $defaultBackup))
 
 $LogPath = Join-Path $BackupDir "install-$(Get-Date -Format yyyyMMdd-HHmmss).log"
 Start-Transcript -LiteralPath $LogPath -ErrorAction SilentlyContinue | Out-Null
 try {
-"apple-fonts-on-windows-11 $Version; $((Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').DisplayVersion) build $([Environment]::OSVersion.Version.Build); run by $([Security.Principal.WindowsIdentity]::GetCurrent().Name)"
+Write-Detail "apple-fonts-on-windows-11 $Version; Windows $((Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').DisplayVersion) build $([Environment]::OSVersion.Version.Build); run by $([Security.Principal.WindowsIdentity]::GetCurrent().Name)"
+Write-Step 4 'Safety checks before any change'
+foreach ($n in $protectNotes) { Write-Warn ($n -replace '^Note: ', '') }
 
 # Run a system tool with a time limit: a hang becomes a clear error instead of a stuck install.
 # Output is read through pipes (no temp files, so no path in the backup folder can be redirected).
 function Invoke-Tool([string]$Exe, [string]$Arguments, [int]$TimeoutSec = 60, [switch]$AllowFail) {
-    "  > $Exe $Arguments"
     $psi = New-Object Diagnostics.ProcessStartInfo $Exe, $Arguments
     $psi.UseShellExecute = $false; $psi.CreateNoWindow = $true
     $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true
@@ -75,7 +78,9 @@ function Read-Sums([string]$Dir) {
 }
 
 function Test-Sums([string]$Dir, $Expected) {
+    $i = 0
     foreach ($rel in $Expected.Keys) {
+        if ($i++ % 8 -eq 0) { Show-Progress 'Step 4 of 7: verifying every font again' $i $Expected.Count }
         $path = Join-Path $Dir $rel
         if (-not (Test-Path -LiteralPath $path)) { throw "Missing font: $path. Nothing was changed." }
         if ((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ne $Expected[$rel]) { throw "Checksum mismatch: $path. Nothing was changed." }
@@ -113,7 +118,8 @@ $sums   = Read-Sums $Here
 $uiSums = Read-Sums (Join-Path $Here 'ui')
 Test-Sums $Here $sums
 Test-Sums (Join-Path $Here 'ui') $uiSums
-'Checksums OK'
+Hide-Progress
+Write-Ok "all $($sums.Count + $uiSums.Count) fonts match their checksums"
 
 # --- 2. state: fresh install or resume ------------------------------------------------------
 if (Test-Path -LiteralPath $StatePath) {
@@ -137,7 +143,7 @@ if (Test-Path -LiteralPath $StatePath) {
         # saves an empty list as {} and += on a single item fails)
         SFFonts   = @(Get-Items $old.SFFonts); UI = @(Get-Items $old.UI); HKCU = @(Get-Items $old.HKCU); EmojiReg = $old.EmojiReg
     }
-    "Resuming: $($state.SFFonts.Count) SF fonts, $($state.UI.Count) UI fonts, emoji=$([bool]$state.EmojiReg) already recorded"
+    Write-Ok "finishing the earlier install ($($state.SFFonts.Count) SF fonts, $($state.UI.Count) UI fonts, emoji $(if ($state.EmojiReg) { 'yes' } else { 'no' }) recorded so far)"
 } else {
     $state = $null
 }
@@ -147,8 +153,8 @@ if (-not $UserSid) { $UserSid = [Security.Principal.WindowsIdentity]::GetCurrent
 if ($UserSid -notmatch '^S-1-(5-21|12-1)(-\d+)+$') { throw "Invalid -UserSid '$UserSid'." }
 if ($state) { $state.UserSid = $UserSid }
 $RegUser = Get-UserFontKey $UserSid
-if (-not $RegUser) { "Note: the registry of user $UserSid is not loaded; their per-user font settings are not checked." }
-if ($UserSid -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value) { "Per-user settings: handled for the signed-in user ($UserSid), not the administrator account used at the UAC prompt" }
+if (-not $RegUser) { Write-Warn "the registry of user $UserSid is not loaded; their per-user font settings are not checked" }
+if ($UserSid -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value) { Write-Info "per-user settings: handled for the signed-in user ($UserSid), not the administrator account used at the UAC prompt" }
 
 # --- 3. pre-flight: every conflict is found here, before anything changes ------------------
 $pendingOps = @((Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name PendingFileRenameOperations -ErrorAction SilentlyContinue).PendingFileRenameOperations)
@@ -163,7 +169,10 @@ $userEntries = if ($RegUser -and (Test-Path -LiteralPath $RegUser)) { @((Get-Ite
 $recorded = @{}; if ($state) { foreach ($s in $state.SFFonts) { $recorded[$s.File] = $s } }
 $sfPlan   = @()
 $perUserSF = @()
-foreach ($rel in @($sums.Keys | Where-Object { $_ -like 'SF\*' })) {
+$sfRels = @($sums.Keys | Where-Object { $_ -like 'SF\*' })
+$i = 0
+foreach ($rel in $sfRels) {
+    if ($i++ % 8 -eq 0) { Show-Progress 'Step 4 of 7: looking for conflicts with fonts already on this PC' $i $sfRels.Count }
     $src  = Join-Path $Here $rel
     $leaf = Split-Path $rel -Leaf
     $dest = Join-Path $Fonts $leaf
@@ -191,7 +200,8 @@ foreach ($rel in @($sums.Keys | Where-Object { $_ -like 'SF\*' })) {
     }
     $sfPlan += $item
 }
-if ($perUserSF) { "Note: $($perUserSF.Count) SF / New York fonts are also installed for this user only (for example '$($perUserSF[0])'). Apps may show them twice; remove them in Settings > Personalization > Fonts if you like." }
+Hide-Progress
+if ($perUserSF) { Write-Warn "$($perUserSF.Count) SF / New York fonts are also installed for this user only (for example '$($perUserSF[0])'). Apps may list them twice; remove them in Settings > Personalization > Fonts if you like." }
 
 $uiPlan = @()
 if (-not $SkipUI) {
@@ -215,22 +225,26 @@ if (-not $SkipEmoji -and -not ($state -and $state.EmojiReg)) {
 # A font substitution set by another tool takes priority over the registrations changed here.
 $subst = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes' -ErrorAction SilentlyContinue
 $substNames = if ($subst) { @($subst.PSObject.Properties | Where-Object { $_.Name -notin $PSProps -and $_.Name -match '^Segoe UI( Variable.*| Emoji)?(,\d+)?$' } | ForEach-Object Name) } else { @() }
-if ($substNames) { "Note: FontSubstitutes redirects $($substNames -join ', ') to another font (set by another tool); some apps keep showing that font until it is removed." }
-'Pre-flight OK'
+if ($substNames) { Write-Warn "FontSubstitutes redirects $($substNames -join ', ') to another font (set by another tool); some apps keep showing that font until it is removed." }
+Write-Ok 'no conflicts found - nothing has been changed so far'
 
 # --- 4. safety nets (fresh install only) ------------------------------------------------------
 $stamp = Get-Date -Format yyyyMMdd-HHmmss
+Write-Step 5 'Safety nets'
+if ($state) { Write-Ok 'kept from the earlier install (restore point and registry backups)' }
 if (-not $state) {
-    if (-not $NoRestorePoint) {
+    if ($NoRestorePoint) { Write-Info 'no restore point (-NoRestorePoint)' }
+    else {
         $job = Start-Job { Checkpoint-Computer -Description 'Before macOS fonts' -RestorePointType MODIFY_SETTINGS -WarningAction Stop }
-        if (Wait-Job $job -Timeout 180) {
-            try { Receive-Job $job -ErrorAction Stop | Out-Null; 'Restore point created' }
-            catch { "Restore point not created: $($_.Exception.Message)" }
-        } else { 'Restore point not created: timed out after 180 s' }
+        if (Wait-WithTimer $job 'Step 5 of 7: creating a System Restore point' 'Windows can take up to 3 minutes for this' 180) {
+            try { Receive-Job $job -ErrorAction Stop | Out-Null; Write-Ok 'restore point "Before macOS fonts" created' }
+            catch { Write-Warn "no restore point: $($_.Exception.Message)" }
+        } else { Write-Warn 'no restore point: Windows did not create it within 3 minutes' }
         Remove-Job $job -Force
     }
     Invoke-Tool reg.exe "export `"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts`" `"$BackupDir\HKLM-Fonts-$stamp.reg`" /y"
     if (-not (Test-Path -LiteralPath "$BackupDir\HKLM-Fonts-$stamp.reg")) { throw 'Could not export the font registry; nothing was changed.' }
+    Write-Ok "font registry backed up to $BackupDir"
     # The per-user key may not exist: that is fine.
     Invoke-Tool reg.exe "export `"HKU\$UserSid\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts`" `"$BackupDir\HKCU-Fonts-$stamp.reg`" /y" -AllowFail
     $state = [ordered]@{
@@ -259,16 +273,22 @@ $alreadyThere = @($sfPlan | Where-Object Skip).Count
 $toRecord = @($sfPlan | Where-Object { -not $_.Skip -and -not $recorded.ContainsKey($_.Leaf) })
 foreach ($p in $toRecord) { $state.SFFonts += [ordered]@{ File = $p.Leaf; Registry = $p.Name; KeepFile = $p.KeepFile } }
 if ($toRecord) { Save-State }
+Write-Step 6 'Installing'
+$i = 0
 foreach ($p in $sfPlan) {
+    if ($i++ % 4 -eq 0) { Show-Progress 'Step 6 of 7: installing the SF / New York fonts' $i $sfPlan.Count }
     if ($p.Skip) { continue }
     if (-not (Test-Path -LiteralPath $p.Dest) -or (Get-FileHash -LiteralPath $p.Dest).Hash -ne $p.Hash) { Copy-Verified $p.Src $p.Dest $p.Hash }
     New-ItemProperty -Path $RegLM -Name $p.Name -Value $p.Leaf -PropertyType String -Force | Out-Null
 }
-"Installed $(@($state.SFFonts).Count) SF / New York fonts" + $(if ($alreadyThere) { " ($alreadyThere identical ones were already installed and are left as they are)" })
+Hide-Progress
+Write-Ok ("$(@($state.SFFonts).Count) SF / New York fonts installed" + $(if ($alreadyThere) { " ($alreadyThere identical ones were already there and are left as they are)" }))
 
 # --- 6. UI fonts: repoint Segoe UI + Segoe UI Variable registrations --------------------
 if (-not $SkipUI) {
+    $i = 0
     foreach ($p in $uiPlan) {
+        Show-Progress 'Step 6 of 7: switching the Windows interface fonts' (++$i) $uiPlan.Count 'fonts'
         $new = "SFUI-$($p.File)"
         if (-not $p.Recorded) {
             $state.UI += [ordered]@{ Registry = $p.Registry; Original = $p.Original; New = $new }
@@ -283,7 +303,9 @@ if (-not $SkipUI) {
         Set-ItemProperty -Path $RegLM -Name $p.Registry -Value $new
     }
     Remove-UserOverride $SegoeUIPattern
-    "UI fonts: $(@($state.UI).Count) Segoe registrations point at SF; $(@($state.HKCU).Count) per-user override(s) unregistered"
+    Hide-Progress
+    Write-Ok "Segoe UI and Segoe UI Variable now use SF Pro ($(@($state.UI).Count) fonts)"
+    if (@($state.HKCU).Count) { Write-Ok "$(@($state.HKCU).Count) per-user copy of Segoe UI unregistered (put back on uninstall)" }
 }
 
 # --- 7. emoji ---------------------------------------------------------------------------
@@ -301,7 +323,7 @@ if (-not $SkipEmoji) {
         Copy-Verified (Join-Path $Here 'emoji\AppleColorEmoji-Windows.ttf') $dest $hash
     }
     Set-ItemProperty -Path $RegLM -Name $state.EmojiReg.Registry -Value $new
-    'Emoji: "Segoe UI Emoji" points at Apple Color Emoji'
+    Write-Ok 'Segoe UI Emoji now uses Apple Color Emoji'
     Remove-UserOverride $EmojiPattern
 }
 
@@ -314,7 +336,8 @@ $appDir = Join-Path $BackupDir 'uninstaller'
 if (Test-Path -LiteralPath $appDir) { Remove-Item -LiteralPath $appDir -Recurse -Force }   # fresh copy, nothing left over
 New-Item -ItemType Directory -Force (Join-Path $appDir 'scripts') | Out-Null
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot '..\uninstall.ps1') -Destination $appDir
-foreach ($f in 'restore-macos-fonts.ps1', 'backup-location.ps1') {
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot '..\VERSION') -Destination $appDir
+foreach ($f in 'restore-macos-fonts.ps1', 'backup-location.ps1', 'ui.ps1') {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot $f) -Destination (Join-Path $appDir 'scripts')
 }
 $kb = [int]((Get-ChildItem -LiteralPath $Here -Recurse -File -Include *.ttf, *.otf | Measure-Object Length -Sum).Sum / 1KB)
@@ -333,24 +356,24 @@ $values = [ordered]@{
 foreach ($k in $values.Keys) { New-ItemProperty -Path $UninstallKey -Name $k -Value $values[$k] -PropertyType String -Force | Out-Null }
 foreach ($k in 'NoModify', 'NoRepair') { New-ItemProperty -Path $UninstallKey -Name $k -Value 1 -PropertyType DWord -Force | Out-Null }
 New-ItemProperty -Path $UninstallKey -Name EstimatedSize -Value $kb -PropertyType DWord -Force | Out-Null
-'Added to Settings > Apps > Installed apps ("Apple fonts on Windows 11"), where it can be uninstalled'
+Write-Ok 'added to Settings > Apps > Installed apps'
 
 # --- 9. state + font cache --------------------------------------------------------------
 $state.Complete = $true
 Save-State
-'Font cache: stopping the service'
+Write-Step 7 'Finishing'
 $svc = Start-Job { Stop-Service FontCache -Force -ErrorAction SilentlyContinue }
-if (-not (Wait-Job $svc -Timeout 60)) { 'Font cache service did not stop in 60 s; the cache will rebuild at restart anyway' }
+if (-not (Wait-WithTimer $svc 'Step 7 of 7: clearing the font cache' 'stopping the Windows font cache service' 60)) { Write-Info 'the font cache service is slow to stop; Windows rebuilds the cache at restart anyway' }
 Remove-Job $svc -Force
 Remove-Item "$env:WINDIR\ServiceProfiles\LocalService\AppData\Local\FontCache\*FontCache*" -Force -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath "$env:WINDIR\System32\FNTCACHE.DAT" -Force -ErrorAction SilentlyContinue
-'Font cache cleared'
-"DONE. Log: $LogPath"
+Write-Ok 'font cache cleared'
 
 } catch {
     # In the log too (the caller prints the message after the transcript has stopped)
-    "ERROR: $($_.Exception.Message)"
-    $_.ScriptStackTrace
+    Hide-Progress
+    Write-Detail "error: $($_.Exception.Message)"
+    Write-Detail $_.ScriptStackTrace
     throw
 } finally {
     Stop-Transcript -ErrorAction SilentlyContinue | Out-Null

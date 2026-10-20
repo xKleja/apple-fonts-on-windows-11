@@ -11,6 +11,12 @@
 #>
 param([string]$BackupDir)
 $ErrorActionPreference = 'Stop'
+# Started from a PowerShell 7 window, Windows PowerShell inherits its module path and then cannot load
+# its own modules (Get-FileHash, Expand-Archive, Get-Acl ... "not recognized"): use its own folders.
+if ($PSVersionTable.PSEdition -eq 'Desktop') {
+    $env:PSModulePath = (@([Environment]::GetEnvironmentVariable('PSModulePath', 'Machine') -split ';') +
+        (Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'WindowsPowerShell\Modules') | Where-Object { $_ }) -join ';'
+}
 if ($ExecutionContext.SessionState.LanguageMode -ne 'FullLanguage') {
     Write-Host 'Windows is blocking scripts on this PC (Smart App Control, S mode or an App Control policy).' -ForegroundColor Red
     exit 1

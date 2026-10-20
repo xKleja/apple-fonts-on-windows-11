@@ -3,10 +3,13 @@
 #
 # Every recorded item is undone independently: one failure does not stop the rest. state.json is
 # only retired when everything succeeded, so a re-run can finish the job.
+# The window shows three steps (scripts\ui.ps1): check the record, restore, finish.
 #Requires -RunAsAdministrator
 param([string]$BackupDir)   # default %ProgramData%\AppleFontsOnWindows
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'backup-location.ps1')
+$UiTotal = 3
+. (Join-Path $PSScriptRoot 'ui.ps1')
 $BackupDir = if ($BackupDir) { Resolve-UserPath $BackupDir } else { Get-DefaultBackupDir }
 $Fonts     = "$env:WINDIR\Fonts"
 $RegLM     = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts'
@@ -17,11 +20,14 @@ $LogPath = Join-Path $BackupDir "restore-$(Get-Date -Format yyyyMMdd-HHmmss).log
 Start-Transcript -LiteralPath $LogPath -ErrorAction SilentlyContinue | Out-Null
 try {
 
+Write-Step 1 'Checking what the install changed'
 try { $state = Get-Content -LiteralPath $StatePath -Raw | ConvertFrom-Json }
 catch { throw "state.json is unreadable ($($_.Exception.Message)). Restore with the HKLM-Fonts-*.reg export in $BackupDir." }
 Assert-SafeState $state
+$when = if ($state.Installed -is [datetime]) { $state.Installed.ToString('yyyy-MM-dd HH:mm') } else { "$($state.Installed)".Replace('T', ' ') }
+Write-Ok "install record from $when checked ($(if ($state.Complete) { 'complete' } else { 'unfinished' }))"
 if (-not (Test-AdminOnlyTree $BackupDir)) {
-    "Note: $BackupDir can be changed by non-administrators. Only the install's own fonts and registry entries are restored (state.json is checked), but keep install backups in an administrators-only folder."
+    Write-Warn "$BackupDir can be changed by non-administrators. Only the install's own fonts and registry entries are restored (state.json is checked), but keep install backups in an administrators-only folder."
 }
 
 $leftover = @()
@@ -40,15 +46,22 @@ function Step([string]$What, [scriptblock]$Do) {
 
 function Get-Items($list) { @($list | Where-Object { $_ }) }
 
+Write-Step 2 "Putting Windows' own fonts back"
+$ui = @(Get-Items $state.UI); $hkcu = @(Get-Items $state.HKCU); $sf = @(Get-Items $state.SFFonts)
+$total = $ui.Count + $hkcu.Count + $(if ($state.EmojiReg) { 1 } else { 0 }) + $sf.Count
+$done = 0
+$activity = "Step 2 of 3: restoring Windows' fonts"
+
 # UI registrations back to the original Segoe files
-foreach ($u in Get-Items $state.UI) {
+foreach ($u in $ui) {
+    Show-Progress $activity (++$done) $total 'changes'
     Step "UI $($u.Registry)" {
         Set-ItemProperty -Path $RegLM -Name $u.Registry -Value $u.Original
         Remove-FontFile (Join-Path $Fonts $u.New)
     }
 }
+if ($ui) { Write-Ok "Segoe UI and Segoe UI Variable use Windows' own files again ($($ui.Count) fonts)" }
 # Per-user registrations go back into the hive of the user they were taken from
-$hkcu = @(Get-Items $state.HKCU)
 if ($hkcu) {
     $regUser = Get-UserFontKey $state.UserSid
     if (-not $regUser) {
@@ -56,30 +69,34 @@ if ($hkcu) {
     } else {
         if (-not (Test-Path -LiteralPath $regUser)) { New-Item -Path $regUser -Force | Out-Null }
         foreach ($c in $hkcu) {
+            Show-Progress $activity (++$done) $total 'changes'
             Step "per-user $($c.Registry)" { New-ItemProperty -LiteralPath $regUser -Name $c.Registry -Value $c.Value -PropertyType String -Force | Out-Null }
         }
+        Write-Ok "$($hkcu.Count) per-user copy of Segoe UI registered again"
     }
 }
-"UI: $(@(Get-Items $state.UI).Count) Segoe registrations restored, $($hkcu.Count) per-user entries re-registered"
 
 # Emoji registration back to seguiemj.ttf
 if ($state.EmojiReg) {
+    Show-Progress $activity (++$done) $total 'changes'
     Step 'emoji' {
         Set-ItemProperty -Path $RegLM -Name $state.EmojiReg.Registry -Value $state.EmojiReg.Original
         Remove-FontFile (Join-Path $Fonts $state.EmojiReg.New)
     }
-    'Emoji: "Segoe UI Emoji" points at the original seguiemj.ttf again'
+    Write-Ok 'Segoe UI Emoji uses Windows'' own emoji again'
 }
 
 # SF / New York families
-foreach ($s in Get-Items $state.SFFonts) {
+foreach ($s in $sf) {
+    if (++$done % 4 -eq 0) { Show-Progress $activity $done $total 'changes' }
     Step "SF $($s.File)" {
         $props = Get-ItemProperty -Path $RegLM
         if ($props.PSObject.Properties.Name -contains $s.Registry) { Remove-ItemProperty -Path $RegLM -Name $s.Registry }
         if (-not $s.KeepFile) { Remove-FontFile (Join-Path $Fonts $s.File) }   # KeepFile: the file was there before the install
     }
 }
-"Removed $(@(Get-Items $state.SFFonts).Count) SF / New York fonts"
+Hide-Progress
+if ($sf) { Write-Ok "$($sf.Count) SF / New York fonts removed" }
 
 # Files still in use: delete them at the next restart
 if ($leftover) {
@@ -92,31 +109,34 @@ if ($leftover) {
             }
         }
     }
-    "$($leftover.Count) font files in use will be deleted at the next restart"
+    Write-Info "$($leftover.Count) font files are in use; Windows deletes them at the next restart"
 }
 
-'Font cache: stopping the service'
+Write-Step 3 'Finishing'
 $svc = Start-Job { Stop-Service FontCache -Force -ErrorAction SilentlyContinue }
-if (-not (Wait-Job $svc -Timeout 60)) { 'Font cache service did not stop in 60 s; the cache will rebuild at restart anyway' }
+if (-not (Wait-WithTimer $svc 'Step 3 of 3: clearing the font cache' 'stopping the Windows font cache service' 60)) { Write-Info 'the font cache service is slow to stop; Windows rebuilds the cache at restart anyway' }
 Remove-Job $svc -Force
 Remove-Item "$env:WINDIR\ServiceProfiles\LocalService\AppData\Local\FontCache\*FontCache*" -Force -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath "$env:WINDIR\System32\FNTCACHE.DAT" -Force -ErrorAction SilentlyContinue
+Write-Ok 'font cache cleared'
 
 if ($failed) {
-    "`nSome steps failed (state.json kept, so uninstalling again retries them):"
-    $failed | ForEach-Object { "  $_" }
-    throw "$($failed.Count) restore step(s) failed."
+    Write-Host ''
+    Write-Host 'Some changes could not be undone yet (uninstalling again retries only these):' -ForegroundColor Yellow
+    $failed | ForEach-Object { Write-Warn $_ }
+    throw "$($failed.Count) change(s) could not be undone."
 }
 if ($state.UninstallEntry -or (Test-Path $UninstallKey)) {
     if (Test-Path $UninstallKey) { Remove-Item $UninstallKey -Recurse -Force }
-    'Removed from Settings > Apps > Installed apps'
+    Write-Ok 'removed from Settings > Apps > Installed apps'
 }
 Rename-Item -LiteralPath $StatePath "state.restored-$(Get-Date -Format yyyyMMdd-HHmmss).json"
-"DONE. Log: $LogPath"
+Write-Detail "log: $LogPath"
 
 } catch {
-    "ERROR: $($_.Exception.Message)"
-    $_.ScriptStackTrace
+    Hide-Progress
+    Write-Detail "error: $($_.Exception.Message)"
+    Write-Detail $_.ScriptStackTrace
     throw
 } finally {
     Stop-Transcript -ErrorAction SilentlyContinue | Out-Null
