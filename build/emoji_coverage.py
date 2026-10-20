@@ -1,6 +1,6 @@
 """Emoji coverage per Unicode Emoji version: Segoe UI Emoji vs Apple (Mac) vs built font.
 
-Usage: cov.py <emoji-test.txt> name=path[#index] ...
+Usage: emoji_coverage.py <emoji-test.txt> name=path[#index] ...
 An emoji counts as supported when HarfBuzz shapes it to a single non-.notdef glyph.
 """
 import collections
