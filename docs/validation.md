@@ -60,8 +60,8 @@ Each of the 3,963 fully qualified emoji in Unicode 18.0 was shaped to one glyph 
 
 | Unicode emoji version | Segoe UI Emoji (Win 11 25H2) | Apple build |
 |---|---:|---:|
-| 0.6 – 5.0 (core set) | 2,186 | 2,624 |
-| 11.0 – 15.1 | 1,104 | 1,224 |
+| 0.6 – 5.0 (core set) | 2,331 | 2,623 |
+| 11.0 – 15.1 | 850 | 1,150 |
 | 16.0 | 7 | 8 |
 | 17.0 | 43 | 163 |
 | 18.0 | 0 | 0 (not in macOS 27 either) |
