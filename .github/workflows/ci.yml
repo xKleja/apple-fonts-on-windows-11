@@ -13,7 +13,7 @@ jobs:
     name: PowerShell parse (5.1 and 7)
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Parse all .ps1 files (Windows PowerShell 5.1)
         shell: powershell
@@ -74,7 +74,7 @@ jobs:
     name: Python compile
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -85,7 +85,7 @@ jobs:
     name: Shell scripts
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: bash -n
         run: |
           for f in build/*.sh; do
@@ -99,7 +99,7 @@ jobs:
     name: Repo hygiene
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: No font binaries tracked
         run: |
           found=$(git ls-files -- '*.ttf' '*.otf' '*.ttc' '*.ttx')
