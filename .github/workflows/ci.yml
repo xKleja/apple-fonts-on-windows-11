@@ -97,8 +97,24 @@ jobs:
         shell: powershell
         run: |
           .\status.ps1
-          if ($LASTEXITCODE -ne 1) { throw "status.ps1 should report 'not installed' (exit 1) on a clean runner, got $LASTEXITCODE" }
+          if ($LASTEXITCODE -ne 2) { throw "status.ps1 should report 'not installed' (exit 2) on a clean runner, got $LASTEXITCODE" }
           exit 0
+
+      - name: State validation and backup-folder tests (Windows PowerShell 5.1)
+        shell: powershell
+        run: .\tests\state-and-folder.tests.ps1
+
+      - name: State validation and backup-folder tests (PowerShell 7)
+        shell: pwsh
+        run: .\tests\state-and-folder.tests.ps1
+
+      - name: Launchers stop with a message when the scripts are missing
+        shell: cmd
+        run: |
+          mkdir %RUNNER_TEMP%\lonely && copy Install.cmd %RUNNER_TEMP%\lonely\ >nul
+          call %RUNNER_TEMP%\lonely\Install.cmd < nul > %RUNNER_TEMP%\lonely\out.txt
+          if not errorlevel 1 (echo expected exit 1 & exit /b 1)
+          findstr /c:"Extract All" %RUNNER_TEMP%\lonely\out.txt || exit /b 1
 
   python:
     name: Python lint and compile
@@ -174,3 +190,8 @@ jobs:
           grep -q '"%~dp0install.ps1"' Install.cmd
           grep -q '"%~dp0uninstall.ps1"' Uninstall.cmd
           grep -q '"%~dp0status.ps1"' Status.cmd
+      - name: VERSION is a version number with a CHANGELOG entry
+        run: |
+          v=$(head -n 1 VERSION)
+          echo "$v" | grep -qxE '[0-9]+\.[0-9]+\.[0-9]+'
+          grep -qE "^## \[($v|Unreleased)\]" CHANGELOG.md

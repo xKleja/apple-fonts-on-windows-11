@@ -1,0 +1,37 @@
+name: Release assets
+
+# Downloads the fonts exactly as a user's first install does (Install.cmd -DownloadOnly changes nothing
+# on Windows): proves that fonts/release.txt names a release whose zips match the checksums in git.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'fonts/**'
+      - 'install.ps1'
+      - 'Install.cmd'
+      - 'scripts/checks.ps1'
+      - '.github/workflows/release-assets.yml'
+  schedule:
+    - cron: '17 4 * * 1'   # weekly: a deleted or replaced release asset is noticed
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  download:
+    name: Install.cmd -DownloadOnly
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Download, verify and unpack through the launcher
+        shell: cmd
+        run: call Install.cmd -DownloadOnly < nul
+      - name: Every font is in place
+        shell: pwsh
+        run: |
+          $n = (Get-ChildItem fonts -Recurse -File -Include *.ttf, *.otf).Count
+          if ($n -ne 169) { throw "expected 169 fonts (155 SF/New York + 13 UI + 1 emoji), found $n" }
+          if (Test-Path downloads) { throw 'downloads\ was not cleaned up' }
+          "OK: $n fonts"
