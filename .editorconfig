@@ -20,3 +20,7 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
+
+# Generated reports: keep them byte-for-byte as the tools wrote them.
+[docs/reports/*.txt]
+trim_trailing_whitespace = false

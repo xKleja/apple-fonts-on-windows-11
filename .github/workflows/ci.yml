@@ -4,16 +4,22 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   powershell:
     name: PowerShell parse (5.1 and 7)
     runs-on: windows-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Parse all .ps1 files (Windows PowerShell 5.1)
         shell: powershell
@@ -70,41 +76,90 @@ jobs:
           }
           if ($failed) { exit 1 }
 
+      # docs/lessons-learned.md: $State and $state were the same variable and corrupted state.json.
+      - name: No variable used with two different casings
+        shell: pwsh
+        run: |
+          $failed = $false
+          $files = Get-ChildItem -Recurse -Filter *.ps1 -File | Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' }
+          foreach ($f in $files) {
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$null, [ref]$null)
+            $vars = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.VariableExpressionAst] }, $true) |
+              ForEach-Object { $_.VariablePath.UserPath } | Where-Object { $_ -notmatch ':' } | Sort-Object -Unique -CaseSensitive
+            foreach ($g in ($vars | Group-Object { $_.ToLowerInvariant() } | Where-Object Count -gt 1)) {
+              $failed = $true
+              Write-Host "ERROR $($f.Name): `$$($g.Group -join ' vs $')"
+            }
+          }
+          if ($failed) { exit 1 }
+
+      - name: Status script runs (no install present)
+        shell: powershell
+        run: |
+          .\status.ps1
+          if ($LASTEXITCODE -ne 1) { throw "status.ps1 should report 'not installed' (exit 1) on a clean runner, got $LASTEXITCODE" }
+          exit 0
+
   python:
-    name: Python compile
+    name: Python lint and compile
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
-      - name: Compile Python tools
+      - name: Install tool requirements
+        run: pip install -r build/requirements.txt ruff
+      - name: Compile
         run: python -m compileall -q build validation
+      - name: Ruff
+        run: ruff check --select E9,F,B --ignore B905 build validation
+      - name: Library API still provides what the build relies on
+        run: python -c "from fontTools.varLib import instancer; instancer.OverlapMode.KEEP_AND_SET_FLAGS; import ttfautohint, uharfbuzz, ots"
+      # docs/lessons-learned.md: overlap removal damaged SF Arabic; hint_composites corrupted GPOS.
+      - name: Known-bad build settings stay off
+        run: |
+          ! grep -n 'OverlapMode.REMOVE' build/*.py validation/*.py
+          grep -q 'hint_composites=False' build/build_ui_fonts.py
 
   shell:
     name: Shell scripts
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: bash -n
         run: |
           for f in build/*.sh; do
             echo "bash -n $f"
             bash -n "$f"
           done
-      - name: shellcheck (errors only)
-        run: shellcheck --severity=error build/*.sh
+      - name: shellcheck
+        run: shellcheck --severity=warning build/*.sh
+      - name: Scripts are executable
+        run: git ls-files -s 'build/*.sh' | awk '$1 != "100755" { print "not executable: " $4; bad = 1 } END { exit bad }'
 
   hygiene:
     name: Repo hygiene
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - name: No font binaries tracked
+      - uses: actions/checkout@v7
+      - name: No font binaries or archives tracked
         run: |
-          found=$(git ls-files -- '*.ttf' '*.otf' '*.ttc' '*.ttx')
+          found=$(git ls-files -- '*.ttf' '*.otf' '*.ttc' '*.ttx' '*.woff' '*.woff2' '*.dfont' '*.dmg' '*.pkg' '*.zip')
           if [ -n "$found" ]; then
-            echo "Font files must never be committed:"
+            echo "Font files and archives must never be committed:"
             echo "$found"
             exit 1
           fi
+      - name: No CRLF in the index (.sh would break on macOS)
+        run: |
+          if git ls-files --eol | grep -E '^i/(crlf|mixed)'; then exit 1; fi
+      - name: Checksum manifests are well-formed
+        run: |
+          test "$(grep -c . fonts/SHA256SUMS.txt)" -eq 156     # 155 Apple fonts + the emoji font
+          test "$(grep -c . fonts/ui/SHA256SUMS.txt)" -eq 13
+          ! grep -vE '^[0-9a-f]{64} [ *]\./?[^ ]' fonts/SHA256SUMS.txt
+          ! grep -vE '^[0-9a-f]{64} [ *][^ /]+\.ttf$' fonts/ui/SHA256SUMS.txt

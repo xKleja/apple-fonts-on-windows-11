@@ -3,6 +3,7 @@ fonts/**/*.ttf
 fonts/**/*.otf
 fonts/**/*.ttc
 *.zip
+fonts-zips.sha256
 downloads/
 
 # Build / validation scratch
@@ -10,13 +11,23 @@ build/out/
 build/work/
 validation/out/
 sandbox-results/
+*.hinted
 __pycache__/
 *.pyc
 .venv/
+venv/
+.ruff_cache/
+.mypy_cache/
+
+# OS clutter
+.DS_Store
+Thumbs.db
 
 # Never commit keys or local secrets
 *.pem
 *.key
-id_*
+id_rsa*
+id_ecdsa*
+id_ed25519*
 *.pub
 .env

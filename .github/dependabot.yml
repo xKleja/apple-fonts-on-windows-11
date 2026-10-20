@@ -4,3 +4,13 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+
+  # Tool requirements for the build and validation scripts. CI installs them and checks the
+  # fontTools API the build relies on, so a breaking release shows up in the update PR.
+  - package-ecosystem: "pip"
+    directory: "/build"
+    schedule:
+      interval: "weekly"
+    groups:
+      font-tools:
+        patterns: ["*"]
