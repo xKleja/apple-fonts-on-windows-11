@@ -1,0 +1,28 @@
+rendered SegUIVar.ttf
+rendered segoeui.ttf
+rendered segoeuib.ttf
+rendered segoeuii.ttf
+rendered segoeuil.ttf
+rendered segoeuisl.ttf
+rendered segoeuiz.ttf
+rendered seguibl.ttf
+rendered seguibli.ttf
+rendered seguili.ttf
+rendered seguisb.ttf
+rendered seguisbi.ttf
+rendered seguisli.ttf
+SegUIVar.ttf     35699 inked glyphs | GDI 12px: 0 blank | GDI 16px: 0 blank | GDI 20px: 0 blank | WPF outline: 0 blank
+segoeui.ttf      37442 inked glyphs | GDI 12px: 0 blank | GDI 16px: 0 blank | GDI 20px: 0 blank | WPF outline: 0 blank
+segoeuib.ttf     37442 inked glyphs | GDI 12px: 0 blank | GDI 16px: 0 blank | GDI 20px: 0 blank | WPF outline: 0 blank
+segoeuii.ttf     36620 inked glyphs | GDI 12px: 0 blank | GDI 16px: 0 blank | GDI 20px: 0 blank | WPF outline: 0 blank
+segoeuil.ttf     37442 inked glyphs | GDI 12px: 0 blank | GDI 16px: 0 blank | GDI 20px: 0 blank | WPF outline: 0 blank
+segoeuisl.ttf    37442 inked glyphs | GDI 12px: 0 blank | GDI 16px: 0 blank | GDI 20px: 0 blank | WPF outline: 0 blank
+segoeuiz.ttf     36620 inked glyphs | GDI 12px: 0 blank | GDI 16px: 0 blank | GDI 20px: 0 blank | WPF outline: 0 blank
+seguibl.ttf      37440 inked glyphs | GDI 12px: 0 blank | GDI 16px: 0 blank | GDI 20px: 0 blank | WPF outline: 0 blank
+seguibli.ttf     36619 inked glyphs | GDI 12px: 0 blank | GDI 16px: 0 blank | GDI 20px: 0 blank | WPF outline: 0 blank
+seguili.ttf      36620 inked glyphs | GDI 12px: 0 blank | GDI 16px: 0 blank | GDI 20px: 0 blank | WPF outline: 0 blank
+seguisb.ttf      37442 inked glyphs | GDI 12px: 0 blank | GDI 16px: 0 blank | GDI 20px: 0 blank | WPF outline: 0 blank
+seguisbi.ttf     36620 inked glyphs | GDI 12px: 0 blank | GDI 16px: 0 blank | GDI 20px: 0 blank | WPF outline: 0 blank
+seguisli.ttf     36620 inked glyphs | GDI 12px: 0 blank | GDI 16px: 0 blank | GDI 20px: 0 blank | WPF outline: 0 blank
+
+TOTAL blank glyphs that should have ink: 0
