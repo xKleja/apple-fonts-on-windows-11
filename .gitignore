@@ -1,0 +1,22 @@
+# Font binaries live in the GitHub Release (see fonts/README.md), not in git.
+fonts/**/*.ttf
+fonts/**/*.otf
+fonts/**/*.ttc
+*.zip
+downloads/
+
+# Build / validation scratch
+build/out/
+build/work/
+validation/out/
+sandbox-results/
+__pycache__/
+*.pyc
+.venv/
+
+# Never commit keys or local secrets
+*.pem
+*.key
+id_*
+*.pub
+.env
