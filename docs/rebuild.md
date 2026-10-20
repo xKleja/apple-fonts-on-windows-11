@@ -47,7 +47,7 @@ python -m venv .venv && .venv/bin/pip install -r build/requirements.txt
 .venv/bin/python build/build_ui_fonts.py build/work/SF build/work/segoe build/work/ui
 ```
 
-About 8 minutes on an M-series Mac (hinting 12 × 37k glyphs). Add `--no-hint` for a quick trial build,
+About 6 minutes on an M-series Mac (hinting 12 × 37k glyphs). Add `--no-hint` for a quick trial build,
 or list file names to build only some (for example `segoeui.ttf`).
 
 ## 4. Validate (Windows)

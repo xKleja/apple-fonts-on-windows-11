@@ -34,7 +34,7 @@ Text width vs Segoe for the same sample: English 1.06–1.15× (SF Pro is a litt
 ## Rendering every glyph with Windows' own engines
 
 `validation/render_all_glyphs.py`: each of the 13 fonts loaded privately (not installed). **Every glyph**
-was drawn with GDI at 12, 16 and 20 px and outlined with WPF. **0 blank glyphs** across about 475,000 glyphs × 4 renders.
+was drawn with GDI at 12, 16 and 20 px and outlined with WPF. **0 blank glyphs** across about 480,000 glyphs × 4 renders.
 A positive control (a copy with 3 glyphs deliberately emptied) is caught, so the test can fail.
 
 `validation/winload.ps1`: all 13 fonts and all 155 Apple fonts load in GDI (`AddFontResourceEx`) and WPF
