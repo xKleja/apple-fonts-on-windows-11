@@ -19,9 +19,11 @@ One command installs it, one command undoes it, and no Windows system file is mo
 
 ![Original Segoe UI (left) vs the Apple build (right), every weight, English and Arabic](docs/images/segoe-vs-apple.png)
 
-> **Personal, private setup.** SF Pro, SF Arabic, New York and Apple Color Emoji are Apple's
-> fonts, and Segoe UI is Microsoft's. This repo exists to keep one person's Mac and Windows machines
-> consistent. Keep it private and do not redistribute the fonts.
+> **Public educational project — proprietary fonts are not open source.** This is an independent
+> exploration of Windows typography and font compatibility, not an official Apple or Microsoft product.
+> Source-code publication does not grant a license to Apple's or Microsoft's fonts. Do not redistribute
+> original or modified proprietary font files, including release archives, without the required rights.
+> Review the applicable license terms before downloading, building, installing, or sharing any fonts.
 
 ---
 
