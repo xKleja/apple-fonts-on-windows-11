@@ -91,6 +91,7 @@ if ($failed) {
     $failed | ForEach-Object { "  $_" }
     throw "$($failed.Count) restore step(s) failed."
 }
+if (Test-Path $UninstallKey) { Remove-Item $UninstallKey -Recurse -Force; 'Removed from Settings > Apps > Installed apps' }
 Rename-Item -LiteralPath $StatePath "state.restored-$(Get-Date -Format yyyyMMdd-HHmmss).json"
 'DONE. Restart Windows now.'
 

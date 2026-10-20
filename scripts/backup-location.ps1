@@ -2,6 +2,8 @@
 # Dot-sourced by install-macos-fonts.ps1, restore-macos-fonts.ps1 and status.ps1.
 
 $script:DefaultBackupDir = Join-Path $env:ProgramData 'AppleFontsOnWindows'
+# Settings > Apps > Installed apps entry (written by the install, removed by the restore)
+$script:UninstallKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\AppleFontsOnWindows'
 
 function Get-DefaultBackupDir { $script:DefaultBackupDir }
 

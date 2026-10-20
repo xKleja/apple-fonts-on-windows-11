@@ -29,7 +29,7 @@ if (-not $isAdmin) {
     if ($BackupDir) { $argv += '-BackupDir', ('"{0}"' -f [IO.Path]::GetFullPath($BackupDir).TrimEnd('\')) }
     if ($NoRestartPrompt) { $argv += '-NoRestartPrompt' }
     try { $p = Start-Process powershell.exe -Verb RunAs -ArgumentList $argv -Wait -PassThru }
-    catch { throw 'Administrator rights were declined; nothing was changed.' }
+    catch { Write-Host "`nAdministrator rights were declined; nothing was changed." -ForegroundColor Yellow; exit 1 }
     exit $p.ExitCode
 }
 

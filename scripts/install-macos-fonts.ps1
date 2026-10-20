@@ -21,6 +21,8 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'backup-location.ps1')
+. (Join-Path $PSScriptRoot 'checks.ps1')
+Assert-SupportedWindows
 
 $Fonts     = "$env:WINDIR\Fonts"
 $RegLM     = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts'
@@ -34,7 +36,10 @@ if (-not $BackupDir) { $BackupDir = Get-DefaultBackupDir }
 $BackupDir = [IO.Path]::GetFullPath($BackupDir)
 $StatePath = Join-Path $BackupDir 'state.json'   # not "$State": PowerShell names are case-insensitive ($state = data)
 $newBackupDir = -not (Test-Path -LiteralPath $BackupDir)
-if ($newBackupDir -or $BackupDir -eq (Get-DefaultBackupDir)) { Protect-BackupDir $BackupDir }
+# Admin-only folder: always for the default and for a new one. An existing custom folder keeps its
+# permissions, so the "Installed apps" uninstaller (which runs elevated) is not placed there.
+$protectedBackup = $newBackupDir -or $BackupDir -eq (Get-DefaultBackupDir)
+if ($protectedBackup) { Protect-BackupDir $BackupDir }
 
 Start-Transcript -Path (Join-Path $BackupDir "install-$(Get-Date -Format yyyyMMdd-HHmmss).log") -ErrorAction SilentlyContinue | Out-Null
 try {
@@ -174,7 +179,7 @@ if (-not $SkipUI) {
         $rec = if ($state) { @($state.UI | Where-Object { $_.Original -ieq $file }) } else { @() }
         if ($rec) { foreach ($r in $rec) { $uiPlan += [pscustomobject]@{ File = $file; Registry = $r.Registry; Original = $r.Original; Recorded = $true } }; continue }
         $hits = @($entries | Where-Object { $_.Value -ieq $file })
-        if (-not $hits) { throw "No registry entry found for $file. Nothing was changed." }
+        if (-not $hits) { throw "Windows' registration for $file is missing or was changed (another font tool?). Undo that tool's change first. Nothing was changed." }
         foreach ($h in $hits) { $uiPlan += [pscustomobject]@{ File = $file; Registry = $h.Name; Original = $h.Value; Recorded = $false } }
     }
 }
@@ -184,6 +189,10 @@ if (-not $SkipEmoji -and -not ($state -and $state.EmojiReg)) {
     if ($hit.Count -ne 1) { throw "Expected one registry entry for $EmojiFile, found $($hit.Count). Nothing was changed." }
     $emojiPlan = $hit[0]
 }
+# A font substitution set by another tool takes priority over the registrations changed here.
+$subst = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes' -ErrorAction SilentlyContinue
+$substNames = if ($subst) { @($subst.PSObject.Properties | Where-Object { $_.Name -notin $PSProps -and $_.Name -match '^Segoe UI( Variable.*| Emoji)?(,\d+)?$' } | ForEach-Object Name) } else { @() }
+if ($substNames) { "Note: FontSubstitutes redirects $($substNames -join ', ') to another font (set by another tool); some apps keep showing that font until it is removed." }
 'Pre-flight OK'
 
 # --- 4. safety nets (fresh install only) ------------------------------------------------------
@@ -278,7 +287,39 @@ if (-not $SkipEmoji) {
     }
 }
 
-# --- 8. state + font cache --------------------------------------------------------------
+# --- 8. "Installed apps" entry: uninstall from Settings, even after this folder is deleted ------
+# The uninstaller is copied into the admin-only backup folder, because Settings runs it elevated.
+if ($protectedBackup) {
+    $state.UninstallEntry = $true
+    Save-State
+    $appDir = Join-Path $BackupDir 'uninstaller'
+    New-Item -ItemType Directory -Force (Join-Path $appDir 'scripts') | Out-Null
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot '..\uninstall.ps1') -Destination $appDir -Force
+    foreach ($f in 'restore-macos-fonts.ps1', 'backup-location.ps1') {
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot $f) -Destination (Join-Path $appDir 'scripts') -Force
+    }
+    $release = (Get-Content -LiteralPath (Join-Path $Here 'release.txt') -TotalCount 1 -ErrorAction SilentlyContinue)
+    $kb = [int]((Get-ChildItem -LiteralPath $Here -Recurse -File -Include *.ttf, *.otf | Measure-Object Length -Sum).Sum / 1KB)
+    New-Item $UninstallKey -Force | Out-Null
+    $values = [ordered]@{
+        DisplayName     = 'Apple fonts on Windows 11 (community project)'
+        DisplayVersion  = "$release".Trim().TrimStart('v')
+        Publisher       = 'apple-fonts-on-windows-11 contributors'
+        URLInfoAbout    = 'https://github.com/xKleja/apple-fonts-on-windows-11'
+        DisplayIcon     = "$env:WINDIR\System32\fontview.exe"
+        InstallDate     = Get-Date -Format yyyyMMdd
+        InstallLocation = $BackupDir
+        UninstallString = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$appDir\uninstall.ps1`" -BackupDir `"$BackupDir`""
+    }
+    foreach ($k in $values.Keys) { New-ItemProperty -Path $UninstallKey -Name $k -Value $values[$k] -PropertyType String -Force | Out-Null }
+    foreach ($k in 'NoModify', 'NoRepair') { New-ItemProperty -Path $UninstallKey -Name $k -Value 1 -PropertyType DWord -Force | Out-Null }
+    New-ItemProperty -Path $UninstallKey -Name EstimatedSize -Value $kb -PropertyType DWord -Force | Out-Null
+    'Added to Settings > Apps > Installed apps ("Apple fonts on Windows 11"), where it can be uninstalled'
+} else {
+    "Not added to Installed apps (custom -BackupDir $BackupDir): uninstall with uninstall.ps1 -BackupDir"
+}
+
+# --- 9. state + font cache --------------------------------------------------------------
 $state.Complete = $true
 Save-State
 'Font cache: stopping the service'
