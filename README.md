@@ -1,3 +1,13 @@
+> [!WARNING]
+> **Educational and experimental project — use at your own risk.**
+> This project is provided for educational, research, and demonstration purposes only, **as is**, without any warranties or guarantees. Installing fonts or changing Windows font settings may cause compatibility issues, instability, or data loss; you assume all risks and responsibility for your actions.
+>
+> Apple, San Francisco (SF), New York, and Apple Color Emoji are trademarks or proprietary materials of their respective owners; Segoe UI and Windows belong to Microsoft. This project is **not affiliated with, endorsed by, or sponsored by Apple Inc. or Microsoft Corporation**. No intellectual-property rights or permission to download, copy, modify, distribute, or use proprietary fonts are granted here.
+>
+> **You are responsible for complying with all applicable laws and font license agreements.** In particular, Apple's font licenses may restrict modification, redistribution, and use on non-Apple platforms, even for personal or educational purposes. Calling a project “educational” or using it privately does **not** override those restrictions. Do not use or distribute any font unless you have the necessary rights.
+
+---
+
 # Apple fonts on Windows 11
 
 Make Windows 11 look and read like macOS: **SF Pro** as the system UI font (Start, Taskbar, Search,
