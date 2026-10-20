@@ -84,7 +84,9 @@ registry entry pointed at it.
    exports of the HKLM and HKCU font keys, `state.json`.
 4. Install the 155 SF / New York fonts as new fonts. A byte-identical SF font that is already
    installed is left alone (if it was only unregistered, just its registry entry is added and later removed).
-5. Repoint the 13 Segoe UI / Segoe UI Variable entries and unregister per-user overrides.
+5. Repoint the 13 Segoe UI / Segoe UI Variable entries and unregister per-user overrides. Per-user
+   means the signed-in user (`install.ps1` passes their SID to the elevated run, which works on
+   `HKEY_USERS\<sid>`), not the administrator account typed at the UAC prompt.
 6. Repoint Segoe UI Emoji.
 7. Add the **Settings > Apps > Installed apps** entry. Its uninstaller (`uninstall.ps1` and the
    restore scripts) is copied into the admin-only backup folder, so it still works after the
@@ -107,6 +109,13 @@ records. It refuses a `state.json` with unexpected entries, carries on past indi
 reports them (re-running retries them), and schedules files that are still in use for deletion at the
 next restart. When everything succeeded it removes the Installed apps entry.
 
-Backups and logs: `%ProgramData%\AppleFontsOnWindows\`, readable and writable by administrators only
-(the elevated scripts trust `state.json`). Use `-BackupDir` on install, status and uninstall to use
+Backups and logs: `%ProgramData%\AppleFontsOnWindows\`. Only administrators can change it (the elevated
+scripts trust `state.json` and run the uninstaller copy from it); everyone can read it, because
+`status.ps1` and the Installed apps entry start unelevated. Settings starts `UninstallString` as the
+signed-in user, and `uninstall.ps1` then asks for administrator rights. A folder of that name that
+already exists is used only when it and everything in it can be changed by administrators alone (owner,
+permissions, no links); otherwise it is moved aside and a new one is created, because a standard user
+can create folders in `%ProgramData%` and could otherwise plant the uninstaller. `state.json` itself is
+checked against allowlists (`Assert-SafeState`): only the 13 Segoe UI files, `seguiemj.ttf` and
+Apple-named font files can appear in it. Use `-BackupDir` on install, status and uninstall to use
 another folder.

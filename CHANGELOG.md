@@ -7,6 +7,55 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+From a review of the project as a Windows team lead. The fonts are unchanged.
+
+### Fixed
+
+- **Status.cmd said "Not installed" and uninstalling from Settings failed for anyone not running as
+  administrator**: the backup folder was readable by administrators only. Everyone can now read it; only
+  administrators can change it.
+- **A standard user could prepare `%ProgramData%\AppleFontsOnWindows` before the install** and so control
+  the uninstaller that Settings runs as administrator. A folder that a non-administrator could have
+  changed (owner, permissions, links) is now set aside and recreated; an existing custom `-BackupDir`
+  must be administrators-only.
+- `state.json` is checked against allowlists: only the 13 Segoe UI files, `seguiemj.ttf` and Apple-named
+  font files may appear in it (a modified one could previously make the elevated uninstall remove other fonts).
+- Per-user font overrides are handled for the signed-in user, even when an administrator's password was
+  typed at the UAC prompt (previously the administrator account's settings were changed instead).
+- The launchers keep their window open on every failure, say what to do when the ZIP was not extracted,
+  and start PowerShell by its full path.
+- Paths containing `[` or `]` work (every file operation uses literal paths).
+- A relative `-BackupDir` is resolved against the current folder, and `-BackupDir C:\` is passed correctly.
+- The Settings entry showed the fonts release (1.0.0) as its version; it now shows the project version
+  (new `VERSION` file).
+- Release zips are unpacked into a scratch folder and only the listed fonts are copied out, so a zip cannot
+  replace the checksum files.
+- Restore reports a failed delete-at-restart or registry removal instead of claiming success.
+
+### Changed
+
+- Installing again over a finished install says "Already installed"; over an unfinished one,
+  `Install.cmd` offers to finish it. Uninstalling with nothing installed says "Nothing to uninstall".
+- `status.ps1` shows the project version, the Windows build and the backup folder, flags a per-user copy
+  that hides the system font, and exits 0 / 1 / 2 (in place / differs / not installed).
+- Install and restore logs include the error and its location; a failed install prints the log path.
+- Downloads show progress (Background Intelligent Transfer), keep zips that already arrived, and report
+  free-space and download problems separately.
+- Clear messages for S mode / Smart App Control, and for restarting with Restart rather than Shut down.
+- The SF fonts are recorded in `state.json` in one step before they are copied (faster with antivirus).
+- `-BackupDir` folders must be new or administrators-only, and always get the Settings entry.
+
+### Added
+
+- `tests/state-and-folder.tests.ps1` (state validation, folder trust), run by CI on 5.1 and 7.
+- CI: the launcher's missing-files message; a *Release assets* workflow that downloads the fonts through
+  `Install.cmd -DownloadOnly` on font changes and weekly.
+- Sandbox script test: runs as a standard user too (Status.cmd, reading the uninstaller, not writing the
+  backups), a prepared backup folder, a per-user override, and a folder name with `[ ]`.
+
+Installs made with 1.1.0 or earlier: their Settings entry cannot start its uninstaller without
+administrator rights. Uninstall with `Uninstall.cmd` from this version instead.
+
 ## [1.1.0] - 2026-10-21
 
 The fonts are unchanged (same release assets as v1.0.0); these changes affect the scripts, tools and docs.

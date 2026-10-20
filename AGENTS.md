@@ -26,6 +26,10 @@ New York families, with full English and Arabic support.
    (all load), and a look at the specimen sheets, Arabic in particular. Do not weaken a check to make it pass.
 6. Keep every install step **recorded in `state.json` before or right after it happens**, and
    restorable by `restore-macos-fonts.ps1`. Every external tool call needs a timeout (`Invoke-Tool`).
+   Anything new written to `state.json` must also be allowed (and nothing more) by `Assert-SafeState`.
+   Elevated code must not trust anything a standard user can change (repo folder, a custom `-BackupDir`,
+   anything under `%ProgramData%` that was not checked by `Protect-BackupDir`), and file paths go through
+   `-LiteralPath`.
 7. Do not add startup items, scheduled tasks or services.
 8. **Keep it generic: it must work on any Windows 11 PC, from any folder.** No machine-specific paths,
    drive letters, user names or locales. Use `$PSScriptRoot`, `$env:WINDIR`, `$env:ProgramData`, and find
@@ -54,4 +58,5 @@ New York families, with full English and Arabic support.
 | Is everything still applied? | `.\status.ps1` |
 | New macOS with new emoji or SF fonts | [docs/rebuild.md](docs/rebuild.md), then a new release `vX.Y.Z` and the same tag in `fonts/release.txt` |
 | Windows update broke it | `status.ps1`; if `[DIFF]`, uninstall + install (ask the user first) |
-| Change install behavior | Edit `install.ps1`, `uninstall.ps1` or `scripts/*.ps1`; parse-check both PowerShells; run `sandbox\start-rehearsal.ps1 -Mode Scripts` until `SCRIPT TEST PASSED`; update README, docs and CHANGELOG |
+| Change install behavior | Edit `install.ps1`, `uninstall.ps1` or `scripts/*.ps1`; parse-check both PowerShells; run `tests\state-and-folder.tests.ps1`; run `sandbox\start-rehearsal.ps1 -Mode Scripts` until `SCRIPT TEST PASSED` (it covers the standard-user paths too); update README, docs and CHANGELOG |
+| Release | Bump `VERSION` and move the CHANGELOG `[Unreleased]` section; tag `vX.Y.Z`. Publish font assets before pointing `fonts/release.txt` at them ([docs/rebuild.md](docs/rebuild.md)) |

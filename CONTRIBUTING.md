@@ -16,7 +16,8 @@ Thanks for helping out. Please read the disclaimer at the top of the [README](RE
   particular). Do not weaken a check to make it pass.
 - **Test install changes in Windows Sandbox** before proposing them: fetch the fonts with
   `.\install.ps1 -DownloadOnly`, then run `sandbox\start-rehearsal.ps1 -Mode Scripts` (functional test,
-  must end with `SCRIPT TEST PASSED`) and, for visual changes, `sandbox\start-rehearsal.ps1`.
+  must end with `SCRIPT TEST PASSED`; it also runs steps as a standard user) and, for visual changes,
+  `sandbox\start-rehearsal.ps1`. `tests\state-and-folder.tests.ps1` runs anywhere, in seconds.
   Do not run the real install or uninstall on a machine you care about without a backup.
 - Do not add startup items, scheduled tasks or services.
 - Contributions are accepted under the [MIT License](LICENSE). Do not contribute font files or links to

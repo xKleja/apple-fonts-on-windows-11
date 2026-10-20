@@ -92,14 +92,19 @@ instead) with `zip` installed:
 sha256sum fonts-sf.zip fonts-ui.zip fonts-emoji.zip > fonts-zips.sha256
 ```
 
-Then write the new tag into `fonts/release.txt` (the installer downloads the fonts from the release
-named there, so it must match the checksums above), update `CHANGELOG.md` and the version table in
-the README, and:
+Publish the release **before** pushing the commit that points the installer at it (`fonts/release.txt`),
+so no user ever downloads a checkout whose checksums name a release that is missing or different:
 
 ```bash
+# 1. the release with its assets (as a draft first, to check the files)
+gh release create vX.Y.Z fonts-*.zip fonts-zips.sha256 --draft --title "vX.Y.Z" --notes "<what changed>"
+#    check the assets, then: gh release edit vX.Y.Z --draft=false
+# 2. then the commit: new SHA256SUMS, fonts/release.txt = vX.Y.Z, VERSION, CHANGELOG, README version table
 git commit -am "Fonts vX.Y.Z: <what changed>"
 git tag -a vX.Y.Z -m "vX.Y.Z" && git push --follow-tags
-gh release create vX.Y.Z fonts-*.zip fonts-zips.sha256 --title "vX.Y.Z" --notes "<what changed>"
 ```
+
+The *Release assets* workflow then downloads the fonts through `Install.cmd -DownloadOnly` and fails if
+the release does not match the checksums in git (it also runs weekly).
 
 On a PC with an older version installed: `.\uninstall.ps1`, restart, pull, `.\install.ps1`, restart.

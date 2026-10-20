@@ -55,6 +55,19 @@ Each of these cost real debugging time. They are why the code looks the way it d
   installed, the sandbox sees the files in `C:\Windows\Fonts` without registry entries, which is
   exactly the "file present but not registered" case the installer must handle (it registers them,
   records `KeepFile`, and uninstall removes only the registry entry).
+- **Test as a standard user, not only as administrator.** Everything in the Sandbox test once ran
+  elevated, so it missed that an administrators-only backup folder made `Status.cmd` report "Not
+  installed" and broke the Settings uninstall (Settings starts it unelevated). The test now also runs
+  steps with `runas /trustlevel:0x20000`.
+- **`%ProgramData%` is writable by standard users** (they can create folders). Any folder there that
+  elevated code trusts must be checked recursively (owner, permissions, links) or created fresh.
+- `Get-Acl` owners: files created elevated are owned by Administrators (unless the "object creator"
+  policy is set); a standard user's own folder keeps them as owner, and the owner can always change
+  the permissions.
+- **Windows Sandbox file-system quirk:** in a folder re-created right where one was moved aside, a name
+  that was just renamed away (`state.json.tmp` -> `state.json`, `state.json` -> `state.restored-*.json`)
+  could not be created again ("Could not find file" / "file already exists"). Real NTFS does not do this;
+  `Save-State` uses a new temp name every time anyway.
 
 ## Validating
 

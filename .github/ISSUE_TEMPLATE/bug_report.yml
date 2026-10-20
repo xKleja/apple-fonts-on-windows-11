@@ -9,29 +9,28 @@ body:
         Thanks for reporting. Please fill in every field; it saves a round trip.
 
         **Privacy:** before pasting any output, remove usernames, computer names, and personal paths (for example, replace `C:\Users\<name>\...` with `C:\Users\USER\...`).
-  - type: input
-    id: windows
+  - type: dropdown
+    id: how
     attributes:
-      label: Windows version and build
-      description: Run `winver`, or `[Environment]::OSVersion.Version` in PowerShell.
-      placeholder: "Windows 11 24H2, build 26100.xxxx"
+      label: How did you run it?
+      options:
+        - Double-clicked Install.cmd / Uninstall.cmd / Status.cmd
+        - Uninstalled from Settings > Apps > Installed apps
+        - Ran install.ps1 / uninstall.ps1 / status.ps1 in PowerShell
     validations:
       required: true
   - type: input
-    id: powershell
+    id: account
     attributes:
-      label: PowerShell version
-      description: Run `$PSVersionTable.PSVersion` and say whether you used Windows PowerShell or PowerShell 7.
-      placeholder: "5.1.26100.xxxx (Windows PowerShell)"
+      label: Your Windows account
+      description: Administrator, or a standard account where someone typed an administrator's password at the UAC prompt?
     validations:
       required: true
   - type: input
-    id: release
+    id: update
     attributes:
-      label: Release version installed
-      description: The release tag you downloaded, for example `v1.0.0`.
-    validations:
-      required: true
+      label: Recent Windows update?
+      description: Did Windows install an update since the fonts were installed? (The Windows version and build are in the Status.cmd output below.)
   - type: textarea
     id: what-happened
     attributes:
@@ -42,8 +41,8 @@ body:
   - type: textarea
     id: status-output
     attributes:
-      label: Output of `.\status.ps1`
-      description: Run `.\status.ps1` from the repository folder and paste the full output. Remove usernames and personal paths first.
+      label: Output of Status.cmd
+      description: Double-click Status.cmd in the project folder and paste the full output (it includes the project version and Windows build). Remove usernames and personal paths first.
       render: text
     validations:
       required: true
@@ -56,7 +55,7 @@ body:
     id: logs
     attributes:
       label: Install or restore log (optional)
-      description: The latest `install-*.log` or `restore-*.log` from `%ProgramData%\AppleFontsOnWindows\` (or your `-BackupDir`). Remove usernames and personal paths first.
+      description: A failed install prints the path of its log. Otherwise the newest `install-*.log` or `restore-*.log` in `%ProgramData%\AppleFontsOnWindows\` (or your `-BackupDir`). Remove usernames and personal paths first.
       render: text
   - type: checkboxes
     id: disclaimer
