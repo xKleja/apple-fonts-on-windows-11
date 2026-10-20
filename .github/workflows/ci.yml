@@ -164,3 +164,13 @@ jobs:
           test "$(grep -c . fonts/ui/SHA256SUMS.txt)" -eq 13
           ! grep -vE '^[0-9a-f]{64} [ *]\./?[^ ]' fonts/SHA256SUMS.txt
           ! grep -vE '^[0-9a-f]{64} [ *][^ /]+\.ttf$' fonts/ui/SHA256SUMS.txt
+      - name: fonts/release.txt names a published release
+        run: |
+          tag=$(head -n 1 fonts/release.txt)
+          echo "$tag" | grep -qxE 'v[0-9]+\.[0-9]+\.[0-9]+'
+          curl -fsSL -o /dev/null "https://github.com/${GITHUB_REPOSITORY}/releases/download/$tag/fonts-zips.sha256"
+      - name: Launchers call the scripts next to them
+        run: |
+          grep -q '"%~dp0install.ps1"' Install.cmd
+          grep -q '"%~dp0uninstall.ps1"' Uninstall.cmd
+          grep -q '"%~dp0status.ps1"' Status.cmd

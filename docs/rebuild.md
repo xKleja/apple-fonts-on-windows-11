@@ -92,7 +92,9 @@ instead) with `zip` installed:
 sha256sum fonts-sf.zip fonts-ui.zip fonts-emoji.zip > fonts-zips.sha256
 ```
 
-Then update `CHANGELOG.md` and the version table in the README, and:
+Then write the new tag into `fonts/release.txt` (the installer downloads the fonts from the release
+named there, so it must match the checksums above), update `CHANGELOG.md` and the version table in
+the README, and:
 
 ```bash
 git commit -am "Fonts vX.Y.Z: <what changed>"

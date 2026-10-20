@@ -86,7 +86,16 @@ registry entry pointed at it.
    installed is left alone (if it was only unregistered, just its registry entry is added and later removed).
 5. Repoint the 13 Segoe UI / Segoe UI Variable entries and unregister per-user overrides.
 6. Repoint Segoe UI Emoji.
-7. Clear the font cache (FontCache service data and `FNTCACHE.DAT`), then ask for a restart.
+7. Add the **Settings > Apps > Installed apps** entry. Its uninstaller (`uninstall.ps1` and the
+   restore scripts) is copied into the admin-only backup folder, so it still works after the
+   downloaded folder is deleted. With an existing custom `-BackupDir`, whose permissions are left as
+   they are, this step is skipped.
+8. Clear the font cache (FontCache service data and `FNTCACHE.DAT`), then ask for a restart.
+
+Before step 1, `install.ps1` checks the PC and the folder (`scripts/checks.ps1`): Windows 11 desktop
+edition (build 22000 or later), the folder extracted from the ZIP, not on a network drive (the elevated
+window cannot see the user's mapped drives), and a path short enough for the 260-character limit. It
+warns when the folder is inside OneDrive. The installer repeats the Windows check, elevated.
 
 Every change is **recorded in `state.json` before it is made**, and every copied file is checked
 against its checksum. `state.json` is written atomically, so a power cut cannot leave it half-written.
@@ -96,7 +105,7 @@ An interrupted run can therefore be finished (`install.ps1 -Resume`, which also 
 `scripts/restore-macos-fonts.ps1` (started by `uninstall.ps1`) reverses exactly what `state.json`
 records. It refuses a `state.json` with unexpected entries, carries on past individual failures and
 reports them (re-running retries them), and schedules files that are still in use for deletion at the
-next restart.
+next restart. When everything succeeded it removes the Installed apps entry.
 
 Backups and logs: `%ProgramData%\AppleFontsOnWindows\`, readable and writable by administrators only
 (the elevated scripts trust `state.json`). Use `-BackupDir` on install, status and uninstall to use

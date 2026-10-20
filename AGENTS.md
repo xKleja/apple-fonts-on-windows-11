@@ -27,7 +27,10 @@ New York families, with full English and Arabic support.
 6. Keep every install step **recorded in `state.json` before or right after it happens**, and
    restorable by `restore-macos-fonts.ps1`. Every external tool call needs a timeout (`Invoke-Tool`).
 7. Do not add startup items, scheduled tasks or services.
-8. Never redistribute font files. Respect the licensing disclaimer in [README.md](README.md).
+8. **Keep it generic: it must work on any Windows 11 PC, from any folder.** No machine-specific paths,
+   drive letters, user names or locales. Use `$PSScriptRoot`, `$env:WINDIR`, `$env:ProgramData`, and find
+   registry entries by file name, not display text. Location and Windows checks live in `scripts/checks.ps1`.
+9. Never redistribute font files. Respect the licensing disclaimer in [README.md](README.md).
 
 ## Conventions
 
@@ -49,6 +52,6 @@ New York families, with full English and Arabic support.
 | Task | How |
 |---|---|
 | Is everything still applied? | `.\status.ps1` |
-| New macOS with new emoji or SF fonts | [docs/rebuild.md](docs/rebuild.md), then a new release `vX.Y.Z` |
+| New macOS with new emoji or SF fonts | [docs/rebuild.md](docs/rebuild.md), then a new release `vX.Y.Z` and the same tag in `fonts/release.txt` |
 | Windows update broke it | `status.ps1`; if `[DIFF]`, uninstall + install (ask the user first) |
 | Change install behavior | Edit `install.ps1`, `uninstall.ps1` or `scripts/*.ps1`; parse-check both PowerShells; run `sandbox\start-rehearsal.ps1 -Mode Scripts` until `SCRIPT TEST PASSED`; update README, docs and CHANGELOG |

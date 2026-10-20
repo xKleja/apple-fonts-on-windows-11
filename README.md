@@ -15,7 +15,7 @@ Settings, File Explorer, dialogs, every app's menus), **SF Arabic** for Arabic U
 **Apple Color Emoji** everywhere, and the full **SF / New York** families installed for apps.
 English and Arabic are first-class.
 
-One command installs it, one command undoes it, and no Windows font file is modified.
+Double-click to install, uninstall from Settings like any app, and no Windows font file is modified.
 
 ## Contents
 
@@ -50,15 +50,43 @@ Aptos, Times…), and the console / code fonts.
 
 ## Requirements
 
-- Windows 11, tested on 25H2 (build 26200). Other Windows 11 builds, Windows 10, ARM64 PCs and
-  non-English Windows editions are untested.
-- An administrator account (you will click **Yes** on one UAC prompt)
-- An internet connection for the first run (the fonts are downloaded from the release over HTTPS;
-  no GitHub account or tools needed)
-- Free space: about 2 GB on the drive holding this folder (0.7 GB download, deleted after unpacking,
-  plus 1 GB of unpacked fonts) and about 1 GB on the Windows drive for the installed fonts
+- **Windows 11** (Home, Pro, Education or Enterprise; any language). Tested on 25H2 (build 26200).
+  The installer refuses to run on Windows 10 or Windows Server, before downloading anything.
+- An administrator account, or an administrator's password (you will click **Yes** on one UAC prompt).
+- An internet connection for the first run. The fonts download from this project's release page over
+  HTTPS; no GitHub account or other tools are needed.
+- Free space: about 2 GB on the drive holding this folder (a 0.7 GB download, deleted after unpacking,
+  plus 1 GB of unpacked fonts) and about 1 GB on the Windows drive.
+
+It changes Windows for every account on the PC, and works from any folder on the PC's own drives.
 
 ## Install
+
+1. On this page, click the green **Code** button, then **Download ZIP**.
+2. Right-click the downloaded ZIP, choose **Extract All…**, then **Extract**.
+3. In the extracted folder, double-click **`Install.cmd`**.
+   If Windows asks whether to run it ("Open File – Security Warning"), click **Run**.
+4. Click **Yes** on the administrator (UAC) prompt.
+5. When it finishes, answer **y** to restart. Running apps only pick up a new system font after a restart.
+
+That's it. You can keep the folder, but you don't need it any more: uninstalling works from Settings.
+
+What happens, in order:
+
+1. **Checks first.** It confirms this is Windows 11 and that the folder is usable: extracted from the
+   ZIP, not on a network drive, and not in a very deeply nested folder. It warns if the folder is
+   inside OneDrive, because 1 GB of fonts would then be uploaded too.
+2. **Download.** The three font zips for this version (named in `fonts\release.txt`) are downloaded,
+   verified with SHA-256, and unpacked into `fonts\`. Failed downloads are retried; fonts that are
+   missing or damaged are downloaded again.
+3. **Install, as administrator.** Every font is checked again against the checksums in this folder.
+   Every possible conflict is checked before anything changes. A restore point and registry backups are
+   made. Then the fonts are installed, and Windows' Segoe UI / Segoe UI Variable / Segoe UI Emoji
+   entries are pointed at the Apple builds.
+4. **Settings entry.** It appears in **Settings > Apps > Installed apps** as
+   "Apple fonts on Windows 11 (community project)", so you can uninstall it like any app.
+
+Prefer a terminal, or Git? This does the same:
 
 ```powershell
 git clone https://github.com/xKleja/apple-fonts-on-windows-11.git
@@ -66,43 +94,31 @@ cd apple-fonts-on-windows-11
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
-No Git? Download the repository as a ZIP from the green **Code** button, unpack it, and run the last
-line from inside the unpacked folder.
+### Options
 
-What happens:
+Add options after `Install.cmd` in a Command Prompt, or after `.\install.ps1` in PowerShell:
 
-1. The three font zips are downloaded from the [latest release](../../releases/latest), verified (SHA-256), and unpacked into `fonts\`.
-2. A **UAC prompt** appears. Click **Yes**.
-3. In the elevated window, every font is checked again against the checksums in git, every possible
-   conflict is checked before anything changes, a restore point and backups are made, then the fonts are installed and Windows' Segoe UI / Segoe UI Variable /
-   Segoe UI Emoji entries are pointed at the Apple builds.
-4. It asks to **restart**. Say yes, because running apps only pick up a system font change after a restart.
-
-Options:
-
-| Command | Effect |
+| Option | Effect |
 |---|---|
-| `.\install.ps1 -SkipEmoji` | UI fonts + SF fonts, keep Windows emoji |
-| `.\install.ps1 -SkipUI` | SF fonts + emoji, keep Segoe UI as the system font |
-| `.\install.ps1 -Resume` | Finish an install that was interrupted (power loss, closed window…) |
-| `.\install.ps1 -DownloadOnly` | Only download, verify and unpack the fonts. Windows is not touched. |
-| `.\install.ps1 -Tag v1.0.0` | Install a specific release instead of the latest |
-| `.\install.ps1 -NoRestartPrompt` | Do not ask about restarting |
-| `.\install.ps1 -NoRestorePoint` | Skip the System Restore point |
-| `.\install.ps1 -BackupDir <path>` | Keep state, logs and registry backups somewhere else (pass the same `-BackupDir` to `status.ps1` and `uninstall.ps1`) |
+| `-SkipEmoji` | UI fonts + SF fonts, keep Windows emoji |
+| `-SkipUI` | SF fonts + emoji, keep Segoe UI as the system font |
+| `-Resume` | Finish an install that was interrupted (power loss, closed window…) |
+| `-DownloadOnly` | Only download, verify and unpack the fonts. Windows is not touched. |
+| `-NoRestartPrompt` | Do not ask about restarting |
+| `-NoRestorePoint` | Skip the System Restore point |
+| `-BackupDir <path>` | Keep state, logs and registry backups somewhere else. Pass the same `-BackupDir` to `status.ps1` and `uninstall.ps1`. A new folder also gets the Settings uninstall entry; an existing folder does not. |
+| `-Tag v1.0.0` | Download the fonts from a different release. The default is the release that matches this copy. |
 
 `-Resume` remembers `-SkipUI` / `-SkipEmoji` from the interrupted run, and `status.ps1` only checks the
 parts that were installed.
 
-Offline install: download `fonts-sf.zip`, `fonts-ui.zip`, `fonts-emoji.zip` from the
-release page, unzip all three into `fonts\` (giving `fonts\SF\`, `fonts\ui\`, `fonts\emoji\`), then run `.\install.ps1`.
-It sees the fonts are present and skips the download.
+**Offline install:** download `fonts-sf.zip`, `fonts-ui.zip` and `fonts-emoji.zip` from the
+release page, and unzip all three into `fonts\` (giving `fonts\SF\`, `fonts\ui\`, `fonts\emoji\`).
+Then run `Install.cmd`. It sees that the fonts are present and verified, and skips the download.
 
 ## Check that it worked
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\status.ps1
-```
+Double-click **`Status.cmd`**. It is read-only and changes nothing.
 
 ```
 [OK]   Segoe UI                    -> SFUI-SEGOEUI.TTF     Version 5.72; SF Pro 22.0d5e4 (Apple)
@@ -117,37 +133,42 @@ By eye: open Start and type in Search, open Settings, and type `😀 👍🏽 �
 
 ## Uninstall
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\uninstall.ps1
-```
+Either:
 
-Click **Yes** on UAC, then restart. Windows is back to Segoe UI / Segoe UI Variable / Segoe UI Emoji
+- **Settings > Apps > Installed apps**, find **Apple fonts on Windows 11 (community project)**,
+  then **⋯ > Uninstall**. This works even if you deleted the downloaded folder.
+- Or double-click **`Uninstall.cmd`** in the folder.
+
+Click **Yes** on UAC, then restart. Windows is back to Segoe UI / Segoe UI Variable / Segoe UI Emoji,
 and the SF / New York fonts are removed. It reverses exactly what the install recorded, nothing more.
 
 ## After Windows updates
 
-A big Windows feature update can re-register its own fonts and undo part of this. Run `.\status.ps1`
-after updates. If anything shows `[DIFF]`:
-
-```powershell
-.\uninstall.ps1      # restart
-.\install.ps1        # restart
-```
+A big Windows feature update can re-register its own fonts and undo part of this. After an update,
+double-click `Status.cmd`. If anything shows `[DIFF]`, uninstall, restart, then install again and restart.
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
-| UI still looks like Segoe right after installing | Restart Windows (not just sign out). Then run `.\status.ps1`. |
-| Emoji are still Windows emoji | Same: restart. `status.ps1` should show `Segoe UI Emoji -> SFUI-SEGUIEMJ.TTF`. |
-| `Download of ... failed` | Check the internet connection (and any proxy), then run `install.ps1` again. Or use the offline install above. |
-| `Checksum mismatch` / `Missing font` | A font file changed or a download got corrupted. Delete `fonts\SF`, `fonts\emoji` and the `*.ttf` in `fonts\ui`, then run `install.ps1` again. |
-| `Already installed (found ...state.json)` | It is installed. Use `uninstall.ps1` first, or `install.ps1 -Resume` if the last run was interrupted. |
-| `Nothing to resume: the install ... is complete` | The last install finished; there is nothing for `-Resume` to do. Check it with `status.ps1`. |
-| `C:\Windows\Fonts already has a different SF-Pro.ttf` (or another SF font), or `The font name ... is already registered` | Another copy of that SF font is installed. Uninstall it (Settings > Personalization > Fonts), then run `install.ps1` again. Nothing was changed. |
+| UI still looks like Segoe right after installing | Restart Windows (not just sign out). Then run `Status.cmd`. |
+| Emoji are still Windows emoji | Same: restart. `Status.cmd` should show `Segoe UI Emoji -> SFUI-SEGUIEMJ.TTF`. |
+| Double-clicking `Install.cmd` shows "Windows protected your PC" | Click **More info**, then **Run anyway**. It is a plain text script; open it in Notepad to see what it runs. |
+| `This needs Windows 11` / `This is for Windows 11 PCs` | Only Windows 11 desktop editions are supported. Nothing was changed. |
+| `Files are missing next to install.ps1` | The ZIP was opened but not extracted. Right-click the ZIP, choose **Extract All**, and run `Install.cmd` from the extracted folder. |
+| `This folder is on a network drive` | Copy the folder to this PC (for example to Downloads) and run it from there. |
+| `The folder path is too long` | Move the folder somewhere shorter, for example `C:\AppleFonts`. |
+| `DOWNLOAD FAILED` | Check the internet connection (and any proxy or firewall), then run it again. Or use the offline install above. |
+| `Checksum mismatch` / `Missing font` | A font file was changed after the download check. Run the install again; it downloads damaged fonts again. |
+| `Already installed (found ...state.json)` | It is installed. Uninstall first, or use `-Resume` if the last run was interrupted. |
+| `Nothing to resume: the install ... is complete` | The last install finished, so there is nothing for `-Resume` to do. Check it with `Status.cmd`. |
+| `C:\Windows\Fonts already has a different SF-Pro.ttf` (or another SF font), or `The font name ... is already registered` | Another copy of that SF font is installed. Uninstall it (Settings > Personalization > Fonts), then install again. Nothing was changed. |
+| `Windows' registration for segoeui.ttf is missing or was changed` | Another font tool changed the system font. Undo that tool's change first. Nothing was changed. |
+| `Note: FontSubstitutes redirects Segoe UI ...` | Another tool substitutes a different font for Segoe UI. Some apps will show that font until you remove the substitution. |
 | `A previous uninstall is still waiting ...` | Restart Windows first, then install. |
-| Install stopped half-way | `.\install.ps1 -Resume` finishes it, or `.\uninstall.ps1` undoes whatever was done. Every change is recorded before it is made. |
+| Install stopped half-way | `install.ps1 -Resume` finishes it, or uninstalling undoes whatever was done. Every change is recorded before it is made. |
 | `Administrator rights were declined` | Run it again and click **Yes** on the UAC prompt. |
+| A message about execution policy | Your organization blocks PowerShell scripts with Group Policy. Ask your IT administrator. |
 | Some text slightly truncated ("…") in a tight spot | SF Pro is about 6–15 % wider than Segoe (measured). This is cosmetic; there is no fix short of using Segoe there. |
 | An old app shows blank space instead of an emoji | Apple's emoji are color-only, so very old GDI-only apps that cannot draw color fonts show nothing. Modern apps are fine. |
 | Windows will not start properly (not observed in testing) | Boot to Recovery, then System Restore and pick **"Before macOS fonts"**. Or use your system image backup. |
@@ -175,7 +196,10 @@ Logs of every run: `%ProgramData%\AppleFontsOnWindows\install-*.log` / `restore-
 - Removes per-user registrations of the same Segoe families (`HKCU\...\Fonts`), which would override
   the system ones. They are recorded and put back on uninstall.
 - Clears the Windows font cache (it is rebuilt at the next restart).
-- Writes `state.json`, logs and registry exports to `%ProgramData%\AppleFontsOnWindows\`.
+- Writes `state.json`, logs and registry exports to `%ProgramData%\AppleFontsOnWindows\`, plus a copy of
+  the uninstaller there for the Settings entry.
+- Adds the **Installed apps** entry (`HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\AppleFontsOnWindows`);
+  uninstall removes it.
 - Before the first real install, the release passed 311 automated checks, a render of every glyph with
   Windows' own engines, and a rehearsal in Windows Sandbox. See [docs/validation.md](docs/validation.md).
 
@@ -197,14 +221,18 @@ Release assets: `fonts-sf.zip` (155 Apple fonts), `fonts-ui.zip` (13 UI replacem
 ## Repository layout
 
 ```
-install.ps1              one-step install (download -> verify -> elevate -> install -> restart)
+Install.cmd              double-click: install (runs install.ps1)
+Uninstall.cmd            double-click: undo (runs uninstall.ps1)
+Status.cmd               double-click: read-only health check (runs status.ps1)
+install.ps1              one-step install (checks -> download -> verify -> elevate -> install -> restart)
 uninstall.ps1            one-step undo
 status.ps1               read-only health check
 scripts/
+  checks.ps1                Windows 11 and folder-location checks
   install-macos-fonts.ps1   the actual installer (state-tracked, resumable)
   restore-macos-fonts.ps1   the actual restore
   backup-location.ps1       where state, logs and backups live
-fonts/                   filled from the release; SHA256SUMS.txt files are tracked in git
+fonts/                   filled from the release; release.txt and the SHA256SUMS.txt files are tracked in git
 build/                   macOS pipeline: fetch Apple fonts, build UI fonts, build emoji
 validation/              checks, render-every-glyph, specimen sheets, Arabic diagnostics
 sandbox/                 Windows Sandbox tests: script test (no restarts) and full rehearsal

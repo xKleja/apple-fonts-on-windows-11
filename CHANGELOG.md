@@ -11,6 +11,15 @@ The fonts are unchanged (same release assets as v1.0.0); these changes affect th
 
 ### Added
 
+- Double-click launchers `Install.cmd`, `Uninstall.cmd` and `Status.cmd`; the README install guide is
+  written for anyone with Windows 11 (Download ZIP, Extract All, double-click).
+- A **Settings > Apps > Installed apps** entry, with its uninstaller kept in the admin-only backup folder,
+  so uninstalling works after the downloaded folder is deleted.
+- Checks before anything is downloaded or changed: Windows 11 desktop edition, folder extracted from the
+  ZIP, not on a network drive, path not too long; a warning for OneDrive folders and for an existing
+  FontSubstitutes entry for Segoe UI.
+- `fonts/release.txt`: the installer downloads the release that matches the checksums in the checkout
+  (instead of the latest release), retries failed downloads, and downloads missing or damaged fonts again.
 - Project scaffolding: license, notice, contributing guide, security policy, CI, issue/PR templates, editorconfig.
 - `sandbox/script-test.ps1` and `start-rehearsal.ps1 -Mode Scripts`: a no-restart functional test of the
   install and restore scripts (fresh install, guards, simulated crash + `-Resume`, restore) in Windows Sandbox.
