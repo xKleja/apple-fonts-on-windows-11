@@ -7,6 +7,13 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- README rewritten for people installing it: what it does, a four-step install, how to undo it, and
+  what to do when something goes wrong come first. Everything else (the download route, requirements,
+  every message and its fix, safety, options, font versions, developer notes) is in sections that
+  open on click.
+
 ## [1.3.0] - 2026-10-21
 
 Install by pasting one line into PowerShell. The fonts are unchanged.
