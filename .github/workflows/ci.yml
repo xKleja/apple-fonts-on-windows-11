@@ -163,6 +163,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
+      - name: Windows safety guards (rules marked CI in AGENTS.md)
+        run: bash .github/scripts/safety-guards.sh
       - name: No font binaries or archives tracked
         run: |
           found=$(git ls-files -- '*.ttf' '*.otf' '*.ttc' '*.ttx' '*.woff' '*.woff2' '*.dfont' '*.dmg' '*.pkg' '*.zip')

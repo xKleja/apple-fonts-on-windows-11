@@ -7,6 +7,20 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- `AGENTS.md` rewritten as the must-read rule list for coding agents and contributors: the complete list
+  of what the install may change on Windows, Windows anti-corruption rules, security, PowerShell, user
+  experience, testing (definition of done), font and release rules. `CLAUDE.md` points Claude Code to it.
+- CI safety guards (`.github/scripts/safety-guards.sh`) fail the build when a product script writes to
+  other font settings, deletes registry keys, uses takeown / icacls, adds anything that runs later, uses
+  boot or servicing tools, runs downloaded code, contacts another address, or starts Windows tools
+  without a full path.
+
+### Changed
+
+- `reg.exe` and `shutdown.exe` are started by full path.
+
 ## [1.2.0] - 2026-10-21
 
 From a review of the project as a Windows team lead. The fonts are unchanged.

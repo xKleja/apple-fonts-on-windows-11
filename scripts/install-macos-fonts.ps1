@@ -242,11 +242,11 @@ if (-not $state) {
         } else { Write-Warn 'no restore point: Windows did not create it within 3 minutes' }
         Remove-Job $job -Force
     }
-    Invoke-Tool reg.exe "export `"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts`" `"$BackupDir\HKLM-Fonts-$stamp.reg`" /y"
+    Invoke-Tool "$env:SystemRoot\System32\reg.exe" "export `"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts`" `"$BackupDir\HKLM-Fonts-$stamp.reg`" /y"
     if (-not (Test-Path -LiteralPath "$BackupDir\HKLM-Fonts-$stamp.reg")) { throw 'Could not export the font registry; nothing was changed.' }
     Write-Ok "font registry backed up to $BackupDir"
     # The per-user key may not exist: that is fine.
-    Invoke-Tool reg.exe "export `"HKU\$UserSid\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts`" `"$BackupDir\HKCU-Fonts-$stamp.reg`" /y" -AllowFail
+    Invoke-Tool "$env:SystemRoot\System32\reg.exe" "export `"HKU\$UserSid\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts`" `"$BackupDir\HKCU-Fonts-$stamp.reg`" /y" -AllowFail
     $state = [ordered]@{
         Installed = (Get-Date).ToString('s'); Complete = $false; Version = $Version; UserSid = $UserSid
         Options   = [ordered]@{ SkipUI = [bool]$SkipUI; SkipEmoji = [bool]$SkipEmoji }

@@ -83,7 +83,7 @@ Write-Host $line -ForegroundColor Green
 if (-not $NoRestartPrompt -and $Interactive) {
     $answer = Read-Host "`nRestart now? Save your work first. (y = restart in 30 s, n = later)"
     if ($answer -match '^(y|yes)$') {
-        shutdown.exe /r /t 30 /c "Restarting to restore the Windows fonts. Save your work. (shutdown /a cancels)"
+        & "$env:SystemRoot\System32\shutdown.exe" /r /t 30 /c "Restarting to restore the Windows fonts. Save your work. (shutdown /a cancels)"
         Write-Host 'Restarting in 30 seconds. Run "shutdown /a" to cancel.'
     } else { Write-Host 'Restart later with Start > Power > Restart.' }
 }

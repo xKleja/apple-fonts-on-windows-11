@@ -2,6 +2,10 @@
 
 Thanks for helping out. Please read the disclaimer at the top of the [README](README.md) first.
 
+**Everyone, human or AI agent, must follow [AGENTS.md](AGENTS.md).** It is the complete rule list:
+what the install may change on Windows and what it must never touch, plus the security, PowerShell,
+testing and release rules. CI enforces the most dangerous ones. The points below are a summary.
+
 ## Ground rules
 
 - **PowerShell must parse on Windows PowerShell 5.1 and PowerShell 7.** Check both `powershell.exe`
