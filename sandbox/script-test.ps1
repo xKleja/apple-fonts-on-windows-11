@@ -75,6 +75,7 @@ function Assert-Installed([string]$label) {
     Check (Test-Path "$Fonts\SFUI-segoeui.ttf") 'SFUI-segoeui.ttf exists'
     Check ($r.'SF Pro Regular (TrueType)' -eq 'SF-Pro.ttf') 'SF Pro registered'
     Check ($s.Complete -eq $true) 'state.Complete'
+    Check ($s.Version -is [string] -and $s.Version -eq (Get-Content "$Src\VERSION" -TotalCount 1).Trim()) "state.Version is the plain version ($($s.Version))"
     Check (@($s.UI).Count -eq 13) "state.UI has 13 entries ($(@($s.UI).Count))"
     Check ([bool]$s.EmojiReg) 'state.EmojiReg recorded'
     $users = @((Get-Acl -LiteralPath $Backup).Access | Where-Object { $_.IdentityReference -match 'Users$' -and $_.FileSystemRights -match 'Write|Modify|FullControl|Delete|ChangePermissions|TakeOwnership' })

@@ -38,7 +38,7 @@ $hasUI    = -not $s -or @($s.UI | Where-Object { $_ }).Count -gt 0
 $hasEmoji = -not $s -or [bool]$s.EmojiReg
 
 $cv = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
-$version = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'VERSION') -TotalCount 1 -ErrorAction SilentlyContinue
+$version = "$(Get-Content -LiteralPath (Join-Path $PSScriptRoot 'VERSION') -TotalCount 1 -ErrorAction SilentlyContinue)".Trim()
 Write-Host "Apple fonts on Windows 11 $version - status" -ForegroundColor Cyan
 $product = if ([int]$cv.CurrentBuild -ge 22000) { $cv.ProductName -replace 'Windows 10', 'Windows 11' } else { $cv.ProductName }   # Windows 11 still says "Windows 10" here
 "  Windows: $product $($cv.DisplayVersion), build $($cv.CurrentBuild).$($cv.UBR)"
@@ -92,7 +92,9 @@ Write-Host "`nRecorded install:" -ForegroundColor Cyan
 $installed = $true
 if ($s) {
     $when = if ($s.Installed -is [datetime]) { $s.Installed.ToString('s') } else { $s.Installed }
-    "  installed $when (version $(if ($s.Version) { $s.Version } else { 'before 1.2' })); complete=$($s.Complete); SF fonts=$(@($s.SFFonts | Where-Object { $_ }).Count); UI=$(@($s.UI | Where-Object { $_ }).Count); emoji=$([bool]$s.EmojiReg)"
+    # 1.2.0 on Windows PowerShell saved the version as an object: { "value": "1.2.0", "PSPath": ... }
+    $installedVersion = if ($s.Version.value) { $s.Version.value } elseif ($s.Version) { $s.Version } else { 'before 1.2' }
+    "  installed $when (version $installedVersion); complete=$($s.Complete); SF fonts=$(@($s.SFFonts | Where-Object { $_ }).Count); UI=$(@($s.UI | Where-Object { $_ }).Count); emoji=$([bool]$s.EmojiReg)"
     "  Installed apps entry: $(if (Test-Path $UninstallKey) { 'yes' } else { 'no' })"
     if (-not $s.Complete) { "  The install did not finish: run Install.cmd again to finish it, or uninstall to undo it."; $ok = $false }
 } elseif ($stateError) {

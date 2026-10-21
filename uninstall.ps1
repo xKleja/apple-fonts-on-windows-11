@@ -37,7 +37,7 @@ if ($ExecutionContext.SessionState.LanguageMode -ne 'FullLanguage') {
 }
 $UiTotal = 3
 . (Join-Path $PSScriptRoot 'scripts\ui.ps1')
-$Version = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'VERSION') -TotalCount 1 -ErrorAction SilentlyContinue
+$Version = "$(Get-Content -LiteralPath (Join-Path $PSScriptRoot 'VERSION') -TotalCount 1 -ErrorAction SilentlyContinue)".Trim()
 $Started = Get-Date
 $BackupDir = if ($BackupDir) { $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($BackupDir) }
              else { Join-Path $env:ProgramData 'AppleFontsOnWindows' }

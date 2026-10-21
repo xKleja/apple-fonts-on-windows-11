@@ -76,6 +76,12 @@ Each of these cost real debugging time. They are why the code looks the way it d
   that was just renamed away (`state.json.tmp` -> `state.json`, `state.json` -> `state.restored-*.json`)
   could not be created again ("Could not find file" / "file already exists"). Real NTFS does not do this;
   `Save-State` uses a new temp name every time anyway.
+- **`Get-Content` returns strings with hidden extra properties** (`PSPath`, `ReadCount`, ...). Windows
+  PowerShell's `ConvertTo-Json` writes such a string as an object, so 1.2.0 saved
+  `"Version": { "value": "1.2.0", "PSPath": ... }` in `state.json`. Found by the paste-in Sandbox test,
+  where Status.cmd printed it. Make it a plain string before storing it: `"$(Get-Content ...)".Trim()`.
+- **`Start-Process -PassThru` without `-Wait`:** read `$p.Handle` once right after starting, or
+  `$p.ExitCode` stays empty on Windows PowerShell after `WaitForExit()`.
 
 ## Validating
 

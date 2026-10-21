@@ -32,7 +32,7 @@ Assert-SupportedWindows
 $Fonts     = "$env:WINDIR\Fonts"
 $RegLM     = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts'
 $PSProps   = 'PSPath', 'PSParentPath', 'PSChildName', 'PSDrive', 'PSProvider'
-$Version   = (Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\VERSION') -TotalCount 1 -ErrorAction SilentlyContinue)
+$Version   = "$(Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\VERSION') -TotalCount 1 -ErrorAction SilentlyContinue)".Trim()   # a plain string: Get-Content's extra properties would end up in state.json
 
 $defaultBackup = -not $BackupDir
 $BackupDir = if ($defaultBackup) { Get-DefaultBackupDir } else { Resolve-UserPath $BackupDir }
