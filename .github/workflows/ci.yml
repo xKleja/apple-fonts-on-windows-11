@@ -197,3 +197,7 @@ jobs:
           v=$(head -n 1 VERSION)
           echo "$v" | grep -qxE '[0-9]+\.[0-9]+\.[0-9]+'
           grep -qE "^## \[($v|Unreleased)\]" CHANGELOG.md
+      - name: get.ps1 installs the version in VERSION
+        run: |
+          v=$(head -n 1 VERSION)
+          grep -qF "\$Tag  = 'v$v'" get.ps1

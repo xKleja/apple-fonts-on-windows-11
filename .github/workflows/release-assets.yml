@@ -35,3 +35,19 @@ jobs:
           if ($n -ne 169) { throw "expected 169 fonts (155 SF/New York + 13 UI + 1 emoji), found $n" }
           if (Test-Path downloads) { throw 'downloads\ was not cleaned up' }
           "OK: $n fonts"
+
+  paste-in:
+    # The README's paste-in line downloads get.ps1 from the latest release: it must exist and name that
+    # release. Not on push: a new get.ps1 is attached when its release is published, after the push.
+    name: Latest release has its get.ps1
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: get.ps1 is attached and names the latest release
+        run: |
+          latest=$(curl -fsSIo /dev/null -w '%{redirect_url}' "https://github.com/${GITHUB_REPOSITORY}/releases/latest")
+          tag=${latest##*/}
+          echo "latest release: $tag"
+          curl -fsSL "https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/get.ps1" -o get.ps1
+          grep -qF "\$Tag  = '$tag'" get.ps1

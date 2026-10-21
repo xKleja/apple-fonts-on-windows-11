@@ -36,6 +36,7 @@ the owner's approval, an `Assert-SafeState` allowlist update, a matching restore
 | `%ProgramData%\AppleFontsOnWindows` (or `-BackupDir`) | state, logs, registry exports, the uninstaller copy |
 | Font cache | stop the FontCache service and delete its cache files (Windows rebuilds them) |
 | System Restore | one restore point, "Before macOS fonts" |
+| `%LOCALAPPDATA%\AppleFontsOnWindows` | `get.ps1` only, as the signed-in user: the downloaded copy of the project, one folder per version |
 | `PendingFileRenameOperations` | delete-at-restart of the install's own font files only (`MoveFileEx`) |
 
 - **W1. Never modify, overwrite, rename, move or delete a Windows font file** (`segoe*`, `segui*`,
@@ -92,10 +93,13 @@ the owner's approval, an `Assert-SafeState` allowlist update, a matching restore
 - **S2. File paths always use `-LiteralPath`** (`[` `]` are wildcards in `-Path`). No temp files with
   predictable names in shared folders.
 - **S3. No `Invoke-Expression`, no `Add-Type` with downloaded or user-provided source, no
-  `-EncodedCommand`, no `iex (irm ...)` one-liners** in the product scripts. *(CI)*
+  `-EncodedCommand`, no `iex (irm ...)` one-liners** in the product scripts. *(CI)* The one approved
+  exception is the README's paste-in line, `irm .../releases/latest/download/get.ps1 | iex`, which runs
+  `get.ps1`; `get.ps1` itself follows every rule here.
 - **S4. Download only from this repository's GitHub Releases over HTTPS**, only the files named in the
   code, and only for the release in `fonts/release.txt`. Unpack into a scratch folder and copy out only
-  the files listed in the tracked checksums. No other network endpoints, telemetry, or update checks.
+  the files listed in the tracked checksums. `get.ps1` downloads only the source ZIP of its own release
+  tag. No other network endpoints, telemetry, or update checks.
   *(CI: no other URLs in the product scripts)*
 - **S5. Launch Windows tools by full path** (`$env:SystemRoot\System32\...`). The `.cmd` launchers
   start `%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe`.
@@ -131,6 +135,9 @@ the owner's approval, an `Assert-SafeState` allowlist update, a matching restore
   lines directly. *(CI: aliases)*
 - **P10. Progress bars:** update every few items, not every item (it is slow on 5.1). Silence
   cmdlets' own bars where ours is shown, and always `Hide-Progress` before printing an error.
+- **P11. Store plain values.** A string from `Get-Content` carries extra properties that Windows
+  PowerShell's `ConvertTo-Json` writes out as an object. Use `"$(Get-Content ...)".Trim()` for anything
+  that goes into `state.json` or the registry.
 
 ## U. User experience rules
 
@@ -191,6 +198,11 @@ No output means every file parses.
   `main` on your own initiative.
 - **R5. Never delete or replace published release assets.** Existing installs and old checkouts
   download from them.
+- **R6. Every release attaches `get.ps1` from its tagged commit** (`gh release upload vX.Y.Z get.ps1`),
+  with `$Tag` set to `v` + `VERSION` *(CI)*. The paste-in line always runs the latest release's
+  `get.ps1`, so a release without it breaks the README's first install method *(CI, weekly)*.
+  Test a changed `get.ps1` with `sandbox\start-rehearsal.ps1 -Mode PasteIn` before the release, and
+  with `-Mode PasteIn -Release` after it.
 
 ## When in doubt
 
@@ -207,6 +219,7 @@ A missing feature is fine. A PC with broken fonts is not.
 | Path | What |
 |---|---|
 | `Install.cmd`, `Uninstall.cmd`, `Status.cmd` | double-click launchers (users start here) |
+| `get.ps1` | the paste-in loader, attached to every release: downloads that release and runs `Install.cmd` |
 | `install.ps1`, `uninstall.ps1`, `status.ps1` | entry scripts: checks, download, elevation, summary |
 | `scripts/install-macos-fonts.ps1` | the elevated installer (steps 4-7) |
 | `scripts/restore-macos-fonts.ps1` | the elevated restore |

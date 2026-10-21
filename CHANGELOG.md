@@ -7,8 +7,18 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-21
+
+Install by pasting one line into PowerShell. The fonts are unchanged.
+
 ### Added
 
+- **Paste-in install:** `irm https://github.com/xKleja/apple-fonts-on-windows-11/releases/latest/download/get.ps1 | iex`
+  in PowerShell (or the same through `powershell -Command "..."` from Command Prompt).
+  `get.ps1`, attached to every release, downloads that release's source ZIP from this repository,
+  unpacks it to `%LOCALAPPDATA%\AppleFontsOnWindows` and starts `Install.cmd` there. Pasting it again
+  reuses the copy. CI checks that `get.ps1` names the version in `VERSION`, and every week that the
+  latest release carries a `get.ps1` for itself.
 - `AGENTS.md` rewritten as the must-read rule list for coding agents and contributors: the complete list
   of what the install may change on Windows, Windows anti-corruption rules, security, PowerShell, user
   experience, testing (definition of done), font and release rules. `CLAUDE.md` points Claude Code to it.
@@ -20,6 +30,11 @@ adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 
 - `reg.exe` and `shutdown.exe` are started by full path.
+
+### Fixed
+
+- `state.json` saved the project version as an object (`{ "value": "1.2.0", "PSPath": ... }`) instead
+  of `"1.2.0"`, and Status.cmd printed all of it. Status.cmd reads both forms.
 
 ## [1.2.0] - 2026-10-21
 

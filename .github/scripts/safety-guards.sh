@@ -4,7 +4,7 @@
 # (with the owner's approval), then this file.
 set -u
 cd "$(dirname "$0")/../.."
-files=(install.ps1 uninstall.ps1 status.ps1 scripts/*.ps1 Install.cmd Uninstall.cmd Status.cmd)
+files=(get.ps1 install.ps1 uninstall.ps1 status.ps1 scripts/*.ps1 Install.cmd Uninstall.cmd Status.cmd)
 fail=0
 
 # check RULE "what it forbids" REGEX [ALLOWED-LINES-REGEX]

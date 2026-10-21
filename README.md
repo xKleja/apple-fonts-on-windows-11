@@ -66,6 +66,25 @@ It changes Windows for every account on the PC, and works from any folder on the
 
 ## Install
 
+**The quickest way:** open **PowerShell** (Start menu, type `PowerShell`, press Enter), paste this line
+and press Enter:
+
+```powershell
+irm https://github.com/xKleja/apple-fonts-on-windows-11/releases/latest/download/get.ps1 | iex
+```
+
+It downloads the latest release to `%LOCALAPPDATA%\AppleFontsOnWindows` and starts `Install.cmd`
+from there; continue from step 4 below. In Command Prompt, paste this instead:
+
+```bat
+powershell -NoProfile -Command "irm https://github.com/xKleja/apple-fonts-on-windows-11/releases/latest/download/get.ps1 | iex"
+```
+
+Pasting a command from a web page runs it as you: you can open the address in a browser first and read
+[`get.ps1`](get.ps1). It only downloads this project's release ZIP from GitHub and starts `Install.cmd`.
+
+**Or download it yourself:**
+
 1. Open the [latest release](../../releases/latest) and download **Source code (zip)**.
    (The green **Code > Download ZIP** button on this page gives the newest, not yet released, version.)
 2. Right-click the downloaded ZIP, choose **Extract All…**, then **Extract**.
@@ -75,7 +94,9 @@ It changes Windows for every account on the PC, and works from any folder on the
 5. When it finishes, answer **y** to restart. Running apps only pick up a new system font after a restart.
 
 That's it. Keep the folder if you want to run `Status.cmd` later (for example after Windows updates);
-uninstalling does not need it, because it also works from Settings.
+uninstalling does not need it, because it also works from Settings. With the paste-in line, the folder
+is `%LOCALAPPDATA%\AppleFontsOnWindows\apple-fonts-on-windows-11-<version>` (paste `%LOCALAPPDATA%\AppleFontsOnWindows`
+into the File Explorer address bar).
 
 If an install is interrupted (window closed, power cut), double-click `Install.cmd` again: it offers to
 finish what was started.
@@ -174,6 +195,8 @@ uninstall (Settings > Apps > Installed apps), restart, then double-click `Instal
 | UI still looks like Segoe right after installing | Restart Windows (not just sign out). Then run `Status.cmd`. |
 | Emoji are still Windows emoji | Same: restart. `Status.cmd` should show `Segoe UI Emoji -> SFUI-SEGUIEMJ.TTF`. |
 | Double-clicking `Install.cmd` shows "Windows protected your PC" | Click **More info**, then **Run anyway**. It is a plain text script; open it in Notepad to see what it runs. |
+| `irm` is not recognized, or `'irm' is not recognized as an internal or external command` | It was pasted into Command Prompt. Use the second line above (starting with `powershell`), or open PowerShell instead. |
+| `CANNOT INSTALL: could not download the installer` | Check the internet connection (and any proxy or firewall), then paste the line again. Or download the ZIP yourself (steps 1-3). Nothing was changed. |
 | `This needs Windows 11` / `This is for Windows 11 PCs` | Only Windows 11 desktop editions are supported. Nothing was changed. |
 | `Files are missing next to install.ps1` | The ZIP was opened but not extracted. Right-click the ZIP, choose **Extract All**, and run `Install.cmd` from the extracted folder. |
 | `This folder is on a network drive` | Copy the folder to this PC (for example to Downloads) and run it from there. |
@@ -250,6 +273,7 @@ Release assets: `fonts-sf.zip` (155 Apple fonts), `fonts-ui.zip` (13 UI replacem
 ## Repository layout
 
 ```
+get.ps1                  paste-in loader (attached to each release): downloads it, runs Install.cmd
 Install.cmd              double-click: install (runs install.ps1)
 Uninstall.cmd            double-click: undo (runs uninstall.ps1)
 Status.cmd               double-click: read-only health check (runs status.ps1)

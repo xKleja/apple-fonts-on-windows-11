@@ -16,36 +16,44 @@
     -Mode Scripts runs sandbox\script-test.ps1 instead: a functional test of the install and restore
     scripts with no restarts (install, guards, restore, simulated crash + -Resume, restore), checking
     registry, files and state.json after every step. Result: sandbox-results\script-test.log.
+
+    -Mode PasteIn runs sandbox\pastein-test.ps1 with networking on: the README's paste-in lines (get.ps1)
+    in Windows PowerShell, Command Prompt and PowerShell 7, downloading from GitHub. Without -Release it
+    tests get.ps1 from this checkout; with -Release, the published one. Needs no fonts in ..\fonts.
+    Result: sandbox-results\pastein-test.log.
 #>
-param([ValidateSet('Full', 'Scripts')][string]$Mode = 'Full')
+param([ValidateSet('Full', 'Scripts', 'PasteIn')][string]$Mode = 'Full', [switch]$Release)
 $ErrorActionPreference = 'Stop'
 if (-not (Test-Path "$env:WINDIR\System32\WindowsSandbox.exe")) {
     throw 'Windows Sandbox is not enabled. Elevated: Enable-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM -All, then restart.'
 }
 $repo    = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $results = Join-Path $repo 'sandbox-results'
-if ((Get-ChildItem (Join-Path $repo 'fonts\ui') -Filter *.ttf -ErrorAction SilentlyContinue).Count -lt 13) {
+if ($Mode -ne 'PasteIn' -and (Get-ChildItem (Join-Path $repo 'fonts\ui') -Filter *.ttf -ErrorAction SilentlyContinue).Count -lt 13) {
     throw 'Fonts are missing. Run ..\install.ps1 -DownloadOnly first.'
 }
 New-Item -ItemType Directory -Force $results | Out-Null
 Get-ChildItem $results | Remove-Item -Recurse -Force
 
-$script     = if ($Mode -eq 'Scripts') { 'script-test.ps1' } else { 'rehearsal.ps1' }
+$script     = switch ($Mode) { 'Scripts' { 'script-test.ps1' } 'PasteIn' { 'pastein-test.ps1' } default { 'rehearsal.ps1' } }
+$scriptArgs = if ($Release) { ' -Release' } else { '' }
+$networking = if ($Mode -eq 'PasteIn') { 'Default' } else { 'Disable' }
 $repoXml    = [Security.SecurityElement]::Escape($repo)
 $resultsXml = [Security.SecurityElement]::Escape($results)
 $wsb = @"
 <Configuration>
-  <Networking>Disable</Networking>
+  <Networking>$networking</Networking>
   <MemoryInMB>8192</MemoryInMB>
   <MappedFolders>
     <MappedFolder><HostFolder>$repoXml</HostFolder><SandboxFolder>C:\src</SandboxFolder><ReadOnly>true</ReadOnly></MappedFolder>
     <MappedFolder><HostFolder>$resultsXml</HostFolder><SandboxFolder>C:\results</SandboxFolder><ReadOnly>false</ReadOnly></MappedFolder>
   </MappedFolders>
-  <LogonCommand><Command>powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\src\sandbox\$script</Command></LogonCommand>
+  <LogonCommand><Command>powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\src\sandbox\$script$scriptArgs</Command></LogonCommand>
 </Configuration>
 "@
 $wsbPath = Join-Path $env:TEMP 'apple-fonts-rehearsal.wsb'
 Set-Content $wsbPath $wsb -Encoding UTF8
 Start-Process $wsbPath
-if ($Mode -eq 'Scripts') { "Sandbox starting. Result: $results\script-test.log" }
+if ($Mode -eq 'PasteIn') { "Sandbox starting. Result: $results\pastein-test.log" }
+elseif ($Mode -eq 'Scripts') { "Sandbox starting. Result: $results\script-test.log" }
 else { "Sandbox starting. Progress: $results\rehearsal.log (UTF-16). Screenshots land in $results\<phase>\." }
