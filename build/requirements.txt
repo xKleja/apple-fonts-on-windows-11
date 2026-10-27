@@ -1,5 +1,5 @@
 # build_ui_fonts.py (Mac or Windows) and the validation/ tools
 fonttools>=4.67
-ttfautohint-py>=0.5
-uharfbuzz>=0.40
+ttfautohint-py>=0.6.1
+uharfbuzz>=0.57.0
 opentype-sanitizer>=9.2
